@@ -143,11 +143,16 @@ bd update <setup-issue-id> --claim
 # Ask Claude to scaffold the project based on the architecture doc:
 # "Initialize the project structure per _bmad-output/architecture.md.
 #  Set up frontend, backend, and test directories.
-#  Install dependencies and configure package.json with test commands."
+#  Install dependencies and configure package.json with test commands.
+#  Set up test infrastructure immediately:
+#    - Jest or Vitest for unit/integration tests
+#    - Playwright for E2E tests
+#  All test commands must be runnable from day one."
 
 # Verify setup
 npm install   # or equivalent
 npm test      # should run (even if no tests yet)
+npx playwright --version  # confirm Playwright installed
 
 bd close <setup-issue-id>
 ```
@@ -185,8 +190,9 @@ Repeat for each backend story (create, list, update, delete).
 bd update <issue-id> --claim
 
 # Ask Claude to build the component per architecture doc,
-# AND write component tests.
+# AND write component tests. Include state management.
 # Example: "Build the TodoList component per architecture.md.
+#  Implement state management for todo data.
 #  Write component tests for rendering, empty state, and status display."
 
 # Start dev server and verify in browser
@@ -242,14 +248,14 @@ bd update <docker-issue-id> --claim
 #  - Multi-stage builds
 #  - Non-root users
 #  - Health check endpoints
-#  Then create docker-compose.yml that orchestrates all services
-#  with networking, volumes, and environment config.
+#  Then create docker-compose.yml that orchestrates all containers
+#  (app, database if needed) with networking, volumes, and environment config.
 #  Support dev/test profiles via compose profiles."
 
 # Test it works
 docker-compose up --build
 docker-compose ps          # all services healthy
-docker-compose logs        # check for errors
+docker-compose logs        # verify logs are accessible and no errors
 
 # Verify health checks
 curl http://localhost:<port>/health
