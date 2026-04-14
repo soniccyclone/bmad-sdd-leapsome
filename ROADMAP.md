@@ -75,14 +75,14 @@ bd create --title="Docker — Containerize and orchestrate" --description="Docke
 bd create --title="QA — Coverage, accessibility, security" --description="Quality assurance reports and audits" --type=task --priority=2
 
 # Then break into granular stories (example — adapt IDs to your actual beads):
-bd create --title="API: Create todo endpoint" --description="POST /api/todos — create a new todo item. Acceptance: returns 201, persists to DB, validates input." --type=task --priority=2
-bd create --title="API: List todos endpoint" --description="GET /api/todos — return all todos. Acceptance: returns 200, returns array, supports empty state." --type=task --priority=2
-bd create --title="API: Update todo endpoint" --description="PATCH /api/todos/:id — toggle completion, edit text. Acceptance: returns 200, persists change, 404 on missing." --type=task --priority=2
-bd create --title="API: Delete todo endpoint" --description="DELETE /api/todos/:id — remove a todo. Acceptance: returns 204, actually deletes, 404 on missing." --type=task --priority=2
-bd create --title="UI: Todo list component" --description="Display all todos with completion status. Acceptance: renders list, shows empty state, distinguishes complete/incomplete." --type=task --priority=2
-bd create --title="UI: Add todo form" --description="Input field + submit to create todos. Acceptance: clears on submit, validates non-empty, optimistic update." --type=task --priority=2
-bd create --title="UI: Toggle and delete actions" --description="Complete/uncomplete and delete individual todos. Acceptance: instant visual feedback, syncs with backend." --type=task --priority=2
-bd create --title="E2E: Playwright test suite" --description="Minimum 5 passing E2E tests covering all user journeys. Acceptance: create, complete, delete, empty state, error handling." --type=task --priority=2
+bd create --title="API: Create todo endpoint" --description="POST /api/todos — create a new todo item. Acceptance: returns 201, persists to DB, validates input. Tests: unit test for validation logic, integration test hitting endpoint with valid/invalid payloads." --type=task --priority=2
+bd create --title="API: List todos endpoint" --description="GET /api/todos — return all todos. Acceptance: returns 200, returns array, supports empty state. Tests: integration test for populated list, integration test for empty list." --type=task --priority=2
+bd create --title="API: Update todo endpoint" --description="PATCH /api/todos/:id — toggle completion, edit text. Acceptance: returns 200, persists change, 404 on missing. Tests: integration test for toggle, integration test for 404 on nonexistent ID." --type=task --priority=2
+bd create --title="API: Delete todo endpoint" --description="DELETE /api/todos/:id — remove a todo. Acceptance: returns 204, actually deletes, 404 on missing. Tests: integration test confirming deletion, integration test for 404 on nonexistent ID." --type=task --priority=2
+bd create --title="UI: Todo list component" --description="Display all todos with completion status. Acceptance: renders list, shows empty state, distinguishes complete/incomplete. Tests: component test renders items, component test renders empty state, component test for visual complete/incomplete distinction." --type=task --priority=2
+bd create --title="UI: Add todo form" --description="Input field + submit to create todos. Acceptance: clears on submit, validates non-empty, optimistic update. Tests: component test for submit and clear, component test rejecting empty input." --type=task --priority=2
+bd create --title="UI: Toggle and delete actions" --description="Complete/uncomplete and delete individual todos. Acceptance: instant visual feedback, syncs with backend. Tests: component test for toggle state change, component test for delete removal from list." --type=task --priority=2
+bd create --title="E2E: Playwright test suite" --description="Minimum 5 passing E2E tests covering all user journeys. Tests: (1) create todo, (2) complete todo, (3) delete todo, (4) empty state display, (5) error handling on failed request." --type=task --priority=2
 
 # Wire up dependencies (adapt IDs to match your actual beads)
 # bd dep add <child> <parent>
@@ -132,6 +132,22 @@ Review it:
 ---
 
 ## Step 2: Build the Application
+
+### 2.0 — Start the AI Integration Log
+
+The requirements call for maintaining this log **throughout** implementation, not writing it at the end. Start it now and update it as you go.
+
+```bash
+# Ask Claude: "Create _bmad-output/ai-integration-log.md with section headers:
+#  - Agent Usage (tasks + effective prompts)
+#  - MCP Server Usage (Postman, Chrome DevTools, Playwright)
+#  - Test Generation (AI contributions + gaps)
+#  - Debugging with AI
+#  - Limitations Encountered
+#  Leave sections empty — we'll fill them in as we work."
+```
+
+> After each substep below, add a brief entry to the log before moving on.
 
 ### 2.1 — Project Setup
 
