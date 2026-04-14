@@ -127,6 +127,7 @@ Review it:
 - [ ] `_bmad-output/test-strategy.md`
 - [ ] Stories created in beads (`bd list --status=open`)
 - [ ] All artifacts reviewed with adversarial + edge case skills
+- [ ] Learnings documented (what worked, what surprised you, decisions made)
 
 ---
 
@@ -165,6 +166,9 @@ bd update <issue-id> --claim
 # Run tests after each endpoint
 npm test
 
+# Validate API contracts using Postman MCP or similar tool
+# (Document MCP usage for the AI integration log)
+
 # Review the code
 /bmad-review-adversarial-general  # (paste the diff or point to files)
 /bmad-review-edge-case-hunter     # (paste the diff or point to files)
@@ -188,6 +192,9 @@ bd update <issue-id> --claim
 # Start dev server and verify in browser
 npm run dev
 
+# Use Chrome DevTools MCP to debug and inspect during development
+# (Document MCP usage for the AI integration log)
+
 # Run component tests
 npm test
 
@@ -206,6 +213,9 @@ bd update <e2e-issue-id> --claim
 #  Must cover: create todo, complete todo, delete todo, empty state, error handling.
 #  Minimum 5 passing tests."
 
+# Use Playwright MCP to automate browser interactions
+# (Document MCP usage for the AI integration log)
+
 # Run E2E tests
 npx playwright test
 
@@ -218,6 +228,7 @@ bd close <e2e-issue-id>
 - [ ] Unit and integration tests passing
 - [ ] Minimum 5 E2E Playwright tests passing
 - [ ] All stories closed in beads (`bd list --status=open` shows only remaining work)
+- [ ] Learnings documented (what prompts worked best, MCP server usage notes)
 
 ---
 
@@ -271,7 +282,8 @@ npm test -- --coverage
 
 # Ask Claude to analyze gaps:
 # "Analyze the test coverage report. Identify gaps and suggest
-#  additional tests to reach 70% meaningful coverage."
+#  additional tests to reach 70% meaningful coverage.
+#  Save the coverage analysis to _bmad-output/coverage-report.md."
 
 # Write additional tests as needed, re-run
 npm test -- --coverage
@@ -293,8 +305,11 @@ npx playwright test accessibility
 ### 4.3 — Performance Testing
 
 ```bash
-# Ask Claude: "Analyze application performance. Check bundle size,
-#  API response times, and rendering performance.
+# Use Chrome DevTools MCP to analyze application performance
+# (Document MCP usage for the AI integration log)
+
+# Ask Claude: "Use Chrome DevTools MCP to analyze application performance.
+#  Check bundle size, API response times, and rendering performance.
 #  Document findings in _bmad-output/performance-report.md."
 ```
 
@@ -323,9 +338,10 @@ npx playwright test accessibility
 
 **Step 4 Deliverables Checklist:**
 - [ ] Test coverage >= 70% (`npm test -- --coverage`)
-- [ ] Accessibility report — zero critical WCAG violations
-- [ ] Performance report documented
-- [ ] Security review documented with remediations
+- [ ] `_bmad-output/coverage-report.md` — coverage analysis with gap identification
+- [ ] `_bmad-output/accessibility-report.md` — zero critical WCAG violations
+- [ ] `_bmad-output/performance-report.md` — documented findings
+- [ ] `_bmad-output/security-report.md` — documented with remediations
 - [ ] All QA reports in `_bmad-output/`
 
 ---
@@ -336,26 +352,47 @@ npx playwright test accessibility
 
 ```bash
 # Ask Claude: "Create an AI integration log documenting:
-#  - Which tasks were completed with AI assistance
-#  - Which BMAD skills were used and how they helped
-#  - How AI assisted in generating test cases (and what it missed)
-#  - Debugging cases where AI helped
-#  - Limitations encountered
+#  - Agent Usage: Which tasks were completed with AI assistance? What prompts worked best?
+#  - MCP Server Usage: Which MCP servers were used (Postman, Chrome DevTools, Playwright)? How did they help?
+#  - Test Generation: How did AI assist in generating test cases? What did it miss?
+#  - Debugging with AI: Document cases where AI helped debug issues
+#  - Limitations Encountered: What couldn't the AI do well? Where was human expertise critical?
 #  Save to _bmad-output/ai-integration-log.md"
 ```
 
-### 5.2 — README
+### 5.2 — BMAD Process Documentation
+
+```bash
+# Ask Claude: "Create a document explaining how BMAD guided the implementation.
+#  Cover each phase: PRD refinement, architecture design, story creation, test strategy.
+#  Describe which BMAD skills were used at each stage and what value they added.
+#  Include the learnings from each activity.
+#  Save to _bmad-output/bmad-process-documentation.md"
+```
+
+### 5.3 — Framework Comparison
+
+```bash
+# Ask Claude: "Create a framework comparison document.
+#  Compare the BMAD spec-driven approach to other development methodologies
+#  (e.g., traditional waterfall, ad-hoc AI-assisted, TDD-first).
+#  Highlight what BMAD did well, where it added overhead, and when you'd choose it.
+#  Save to _bmad-output/framework-comparison.md"
+```
+
+### 5.4 — README
 
 ```bash
 # Ask Claude: "Create a README.md with:
 #  - Project overview
 #  - Setup instructions (local dev + Docker)
 #  - How to run tests
-#  - How BMAD guided the implementation
-#  - Link to AI integration log"
+#  - Link to BMAD process documentation
+#  - Link to AI integration log
+#  - Link to framework comparison"
 ```
 
-### 5.3 — Final Push
+### 5.5 — Final Push
 
 ```bash
 # Close all remaining beads
@@ -381,8 +418,10 @@ git status  # must show "up to date with origin"
 - [ ] Unit, integration, and E2E test suites
 - [ ] Dockerfiles and docker-compose.yml (`docker-compose up` works)
 - [ ] QA reports: coverage, accessibility, performance, security
-- [ ] README with setup instructions
-- [ ] AI integration log
+- [ ] `_bmad-output/bmad-process-documentation.md` — how BMAD guided implementation
+- [ ] `_bmad-output/ai-integration-log.md` — agent usage, MCP servers, prompts, limitations
+- [ ] `_bmad-output/framework-comparison.md` — BMAD vs other methodologies
+- [ ] README with setup instructions and links to all docs
 - [ ] All code committed and pushed
 - [ ] All beads issues closed (`bd stats`)
 
@@ -409,6 +448,7 @@ git status  # must show "up to date with origin"
 
 | Criterion | Target |
 |---|---|
+| Phase 1-2 Deliverables | All activities completed with documented learnings |
 | BMAD Artifacts | Project brief, architecture, stories with acceptance criteria |
 | Working Application | Todo app fully functional with all CRUD operations |
 | Test Coverage | Minimum 70% meaningful code coverage |
@@ -416,3 +456,4 @@ git status  # must show "up to date with origin"
 | Docker Deployment | Application runs successfully via `docker-compose up` |
 | Accessibility | Zero critical WCAG violations |
 | Documentation | README with setup instructions, AI integration log |
+| Framework Comparison | BMAD compared against alternative methodologies |
