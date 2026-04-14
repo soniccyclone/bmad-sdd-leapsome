@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "bmad_sdd_leapsome",
+  "project_id": "9efe3722-62bd-42e8-884e-a0fe6838b860"
+}
