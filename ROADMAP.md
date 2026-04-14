@@ -68,6 +68,7 @@ Break the work into trackable stories using beads. Each story gets acceptance cr
 
 ```bash
 # Create epic-level issues first
+bd create --title="Project Setup — Scaffold and test infra" --description="Initialize project structure, install dependencies, set up Jest/Vitest and Playwright, configure package.json test commands" --type=task --priority=1
 bd create --title="Backend API — CRUD endpoints" --description="Implement REST API for todo CRUD operations per architecture doc" --type=feature --priority=2
 bd create --title="Frontend UI — Todo management" --description="Build the todo management UI per architecture doc" --type=feature --priority=2
 bd create --title="Testing — Unit, Integration, E2E" --description="Implement all test suites per test strategy" --type=task --priority=2
@@ -180,8 +181,10 @@ bd close <setup-issue-id>
 bd update <issue-id> --claim
 
 # Ask Claude to implement the endpoint per the architecture doc,
+# including validation and error handling,
 # AND write integration tests for it in the same pass.
 # Example: "Implement POST /api/todos per architecture.md.
+#  Include input validation and error handling.
 #  Write integration tests that hit the real endpoint."
 
 # Run tests after each endpoint
@@ -316,7 +319,8 @@ npm test -- --coverage
 ```bash
 # Run Lighthouse or axe-core via Playwright
 # Ask Claude: "Add an accessibility audit test using axe-core in Playwright.
-#  Check for WCAG AA compliance. Save the report."
+#  Check for WCAG AA compliance.
+#  Save the report to _bmad-output/accessibility-report.md."
 
 npx playwright test accessibility
 
@@ -354,8 +358,10 @@ npx playwright test accessibility
 /bmad-index-docs _bmad-output/
 
 # Structural review of reports
-/bmad-editorial-review-structure _bmad-output/security-report.md
+/bmad-editorial-review-structure _bmad-output/coverage-report.md
 /bmad-editorial-review-structure _bmad-output/accessibility-report.md
+/bmad-editorial-review-structure _bmad-output/performance-report.md
+/bmad-editorial-review-structure _bmad-output/security-report.md
 ```
 
 **Step 4 Deliverables Checklist:**
@@ -370,10 +376,11 @@ npx playwright test accessibility
 
 ## Step 5: Documentation & Session Close
 
-### 5.1 — AI Integration Log
+### 5.1 — Finalize AI Integration Log
 
 ```bash
-# Ask Claude: "Create an AI integration log documenting:
+# Ask Claude: "Finalize the AI integration log (started in Step 2.0).
+#  Review and fill in any incomplete sections. Ensure it documents:
 #  - Agent Usage: Which tasks were completed with AI assistance? What prompts worked best?
 #  - MCP Server Usage: Which MCP servers were used (Postman, Chrome DevTools, Playwright)? How did they help?
 #  - Test Generation: How did AI assist in generating test cases? What did it miss?
