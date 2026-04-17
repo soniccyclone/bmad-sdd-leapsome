@@ -1,0 +1,12 @@
+node_modules
+dist
+.git
+.env
+coverage
+test-results
+playwright-report
+_bmad-output
+_bmad
+.beads
+.dolt
+.claude

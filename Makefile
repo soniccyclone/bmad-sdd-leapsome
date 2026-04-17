@@ -22,7 +22,7 @@ test:              ## Run all tests (unit + integration) — requires Postgres
 	npm test --workspaces --if-present
 
 test-e2e:          ## Run E2E tests (starts app via Playwright webServer config)
-	npx playwright test
+	npx playwright test --config packages/frontend/playwright.config.ts
 
 codegen:           ## Generate types, schemas, client from OpenAPI spec
 	npm run generate --workspace=packages/api-spec
