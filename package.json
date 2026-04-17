@@ -11,5 +11,8 @@
     "dev": "npm run dev --workspaces --if-present",
     "test": "npm test --workspaces --if-present",
     "build": "npm run build --workspaces --if-present"
+  },
+  "devDependencies": {
+    "@redocly/cli": "^2.28.1"
   }
 }

@@ -9,7 +9,16 @@
     "./client": "./generated/client.ts"
   },
   "scripts": {
-    "generate": "echo 'Codegen not yet configured — see OpenAPI story'",
-    "lint": "echo 'Spec lint not yet configured — see OpenAPI story'"
+    "generate": "npm run generate:types && npm run generate:schemas",
+    "generate:types": "openapi-typescript openapi.yaml -o generated/types.ts",
+    "generate:schemas": "openapi-zod-client openapi.yaml -o generated/schemas.ts --no-with-alias",
+    "lint": "echo 'Spec lint not yet configured — needs @redocly/cli'"
+  },
+  "dependencies": {
+    "@zodios/core": "^10.9.6",
+    "openapi-fetch": "^0.12.5",
+    "openapi-typescript": "^7.13.0",
+    "openapi-zod-client": "^1.18.3",
+    "zod": "^3.25.76"
   }
 }

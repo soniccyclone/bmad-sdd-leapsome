@@ -1,0 +1,12 @@
+extends:
+  - recommended
+
+rules:
+  # No auth in MVP — security definitions are out of scope
+  security-defined: off
+  # localhost is our only server for now
+  no-server-example.com: off
+  # License is nice-to-have, not required for a training exercise
+  info-license: off
+  # Health endpoint intentionally has no 4xx responses
+  operation-4xx-response: warn
