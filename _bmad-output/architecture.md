@@ -93,6 +93,8 @@ export const todos = pgTable('todos', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
 });
+// NOTE: $onUpdate is Drizzle application-level only. Direct SQL writes (seed scripts,
+// migrations, manual queries) bypass it — set updated_at explicitly in those contexts.
 ```
 
 ### 3.2 — UUIDv7
@@ -149,7 +151,7 @@ Integration tests validate API responses against the same schemas (contract test
 |---|---|---|---|---|
 | `POST` | `/api/todos` | Create a todo | `201` | `400`, `429`, `503` |
 | `GET` | `/api/todos` | List todos (paginated) | `200` | `400`, `503` |
-| `PATCH` | `/api/todos/:id` | Update (completed/description, upsert) | `200` | `400`, `429`, `503` |
+| `PATCH` | `/api/todos/:id` | Update (completed and/or description, upsert). Body must contain at least one field. | `200` | `400` (empty body, validation, malformed UUID), `429`, `503` |
 | `DELETE` | `/api/todos/:id` | Delete (always 204, idempotent) | `204` | `400`, `429`, `503` |
 | `GET` | `/health` | Health check (DB connectivity) | `200` | `503` |
 
@@ -173,6 +175,8 @@ Response envelope:
   }
 }
 ```
+
+**Edge case:** When `total` is 0, `totalPages` is 0 and `data` is `[]`. The frontend empty state triggers when `total === 0`, not when `data` is empty — this prevents confusion between "no todos" and "page out of range".
 
 ### 4.4 — Path Parameter Validation
 
@@ -198,9 +202,11 @@ No stack traces, file paths, or internal identifiers in any error response.
 - **Input sanitization:** Server-side, before storage, implemented in `packages/backend/src/lib/sanitize.ts`. Pipeline:
   1. Trim leading/trailing whitespace
   2. Collapse internal whitespace runs to single spaces
-  3. Strip HTML tags (regex-based — no DOM parser needed since we only accept plain text)
-  4. Escape remaining HTML entities (`&`, `<`, `>`, `"`, `'`) as a defense-in-depth measure
-  5. Validate length post-sanitization (1-2000 characters)
+  3. **Decode** HTML entities first (`&amp;` → `&`, `&lt;` → `<`) to normalize input and prevent double-encoding
+  4. Strip HTML tags (regex-based — no DOM parser needed since we only accept plain text)
+  5. Escape HTML entities (`&`, `<`, `>`, `"`, `'`) as a defense-in-depth measure
+  6. Validate length post-sanitization (1-2000 characters)
+  - The decode-then-encode order prevents double-escaping (e.g., `&amp;` in input becoming `&amp;amp;` in storage). Unit tests must cover pre-encoded input.
   - No external library required — the sanitization surface is small (plain text only, no rich content). A hand-rolled function with comprehensive unit tests is sufficient and avoids a DOMPurify dependency that's designed for a much harder problem (sanitizing HTML for safe rendering).
 - **XSS prevention:** Frontend renders plain text only via React's default text escaping. No `dangerouslySetInnerHTML` anywhere in the codebase.
 - **Rate limiting:** `@fastify/rate-limit` plugin, per-endpoint (e.g., 100 req/min per IP). App-layer for MVP; document that production moves this to edge/reverse proxy.
@@ -262,17 +268,22 @@ export function useCreateTodo() {
       // 2. Snapshot current data for rollback
       const previousTodos = queryClient.getQueryData(['todos']);
 
-      // 3. Optimistic update — insert a temporary todo with a placeholder ID
-      queryClient.setQueryData(['todos'], (old) => ({
-        ...old,
-        data: [...(old?.data ?? []), {
-          id: crypto.randomUUID(), // placeholder, replaced on refetch
-          description,
-          completed: false,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        }],
-      }));
+      // 3. Optimistic update — only append if on the last page (new items sort to end).
+      //    If not on the last page, skip visual update — the refetch in onSettled will show it.
+      const currentPage = queryClient.getQueryData(['todos']) as any;
+      if (currentPage?.pagination?.page === currentPage?.pagination?.totalPages || !currentPage?.pagination?.total) {
+        queryClient.setQueryData(['todos'], (old: any) => ({
+          ...old,
+          data: [...(old?.data ?? []), {
+            id: crypto.randomUUID(), // placeholder, replaced on refetch
+            description,
+            completed: false,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          }],
+          pagination: old?.pagination ? { ...old.pagination, total: old.pagination.total + 1 } : undefined,
+        }));
+      }
 
       // 4. Return snapshot as context for rollback
       return { previousTodos };
@@ -349,6 +360,12 @@ import cors from '@fastify/cors';
 import { todoRoutes } from './routes/todos';
 import { healthRoute } from './routes/health';
 
+// Validate required env vars on startup — fail fast, not silently
+const REQUIRED_ENV = ['DATABASE_URL', 'FRONTEND_URL'] as const;
+for (const key of REQUIRED_ENV) {
+  if (!process.env[key]) throw new Error(`Missing required env var: ${key}`);
+}
+
 const app = Fastify({ logger: true });
 
 app.register(cors, { origin: process.env.FRONTEND_URL });
@@ -381,7 +398,7 @@ app.post('/api/todos', async (request, reply) => {
 
 ### 6.3 — Logging
 
-Fastify's built-in Pino logger with structured JSON output:
+Fastify's built-in Pino logger with structured JSON output (configured in `app.ts` alongside the Fastify constructor shown above):
 
 ```typescript
 const app = Fastify({
@@ -406,7 +423,8 @@ Fastify automatically logs every request with method, URL, status code, and resp
 ```typescript
 app.get('/health', async (_request, reply) => {
   try {
-    await db.execute(sql`SELECT 1`);
+    // 3s statement timeout prevents hanging on stalled DB connections
+    await db.execute(sql`SET statement_timeout = '3000'; SELECT 1`);
     reply.send({ status: 'ok' });
   } catch {
     reply.status(503).send({
@@ -434,13 +452,15 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U todo"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
       interval: 5s
       timeout: 3s
       retries: 5
 
   backend:
-    build: ./packages/backend
+    build:
+      context: .
+      dockerfile: packages/backend/Dockerfile
     depends_on:
       postgres:
         condition: service_healthy
@@ -454,7 +474,9 @@ services:
       retries: 3
 
   frontend:
-    build: ./packages/frontend
+    build:
+      context: .
+      dockerfile: packages/frontend/Dockerfile
     depends_on:
       backend:
         condition: service_healthy
@@ -470,23 +492,31 @@ volumes:
 Both use multi-stage builds with non-root users:
 
 **Backend:**
+
+Note: Dockerfiles are built from the monorepo root (context: `.`, Compose `build.context: .`) so they have access to the root lockfile. The backend Dockerfile copies the root lockfile + workspace package.json for deterministic installs.
+
 ```dockerfile
 FROM node:20-alpine AS builder
 WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-RUN npm run build
+# Copy root lockfile + workspace package.json for deterministic installs
+COPY package-lock.json ./
+COPY packages/backend/package.json ./packages/backend/
+COPY packages/api-spec/package.json ./packages/api-spec/
+RUN npm ci --workspace=packages/backend --workspace=packages/api-spec
+COPY packages/backend/ ./packages/backend/
+COPY packages/api-spec/ ./packages/api-spec/
+RUN npm run build --workspace=packages/backend
 
 FROM node:20-alpine
 RUN addgroup -g 1001 app && adduser -u 1001 -G app -s /bin/sh -D app
 WORKDIR /app
-COPY --from=builder /app/package*.json ./
-RUN npm ci --omit=dev
-COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package-lock.json ./
+COPY --from=builder /app/packages/backend/package.json ./packages/backend/
+RUN npm ci --omit=dev --workspace=packages/backend
+COPY --from=builder /app/packages/backend/dist ./packages/backend/dist
 USER app
 EXPOSE 3000
-CMD ["node", "dist/server.js"]
+CMD ["node", "packages/backend/dist/server.js"]
 ```
 
 **Frontend:**
@@ -499,14 +529,18 @@ COPY . .
 RUN npm run build
 
 FROM nginx:alpine
-RUN addgroup -g 1001 app && adduser -u 1001 -G app -s /bin/sh -D app
+RUN addgroup -g 1001 app && adduser -u 1001 -G app -s /bin/sh -D app \
+    && chown -R app:app /var/cache/nginx /var/log/nginx /etc/nginx/conf.d \
+    && touch /var/run/nginx.pid && chown app:app /var/run/nginx.pid
 COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+USER app
 EXPOSE 5173
 CMD ["nginx", "-g", "daemon off;"]
 ```
 
 The nginx config handles:
+- **Non-root port:** Listens on 5173 (non-privileged, compatible with `USER app`)
 - **SPA fallback:** All non-file routes return `index.html` (client-side routing)
 - **Caching headers:** Static assets (JS/CSS) get long-lived cache with content-hash filenames; `index.html` gets `no-cache`
 - **Compression:** gzip enabled for text assets
@@ -549,7 +583,9 @@ dev:               ## Start dev environment (Postgres + codegen + migrate + serv
 	$(MAKE) db-migrate
 	npm run dev --workspaces
 
-test:              ## Run all tests (unit + integration + E2E)
+test:              ## Run all tests (unit + integration) — requires Postgres running
+	$(MAKE) docker-up
+	$(MAKE) db-wait
 	npm test --workspaces
 
 test-e2e:          ## Run E2E tests (starts app via Playwright webServer config)
@@ -586,9 +622,10 @@ docs-build:        ## Build API docs (Scalar) + MkDocs site
 docs-serve:        ## Serve docs locally
 	cd docs && mkdocs serve
 
-db-wait:           ## Wait for Postgres to be healthy
+db-wait:           ## Wait for Postgres to be healthy (timeout: 60s)
 	@echo "Waiting for Postgres..."
-	@until docker compose exec postgres pg_isready -U todo > /dev/null 2>&1; do sleep 1; done
+	@timeout 60 sh -c 'until docker compose exec postgres pg_isready > /dev/null 2>&1; do sleep 1; done' \
+		|| (echo "ERROR: Postgres failed to start within 60s"; exit 1)
 	@echo "Postgres is ready."
 
 help:              ## Show this help
