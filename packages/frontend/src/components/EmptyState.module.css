@@ -1,0 +1,42 @@
+/* EmptyState — friendly prompt to create the first todo */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-12) var(--space-4);
+  text-align: center;
+  gap: var(--space-3);
+}
+
+.icon {
+  font-size: 2.5rem;
+  line-height: 1;
+  user-select: none;
+}
+
+.heading {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  line-height: var(--line-height-tight);
+}
+
+.description {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-normal);
+  max-width: 28ch;
+}
+
+/* Responsive */
+@media (max-width: 374px) {
+  .container {
+    padding: var(--space-8) var(--space-3);
+  }
+
+  .icon {
+    font-size: 2rem;
+  }
+}

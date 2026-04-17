@@ -11,7 +11,7 @@
 
 /* Exported as CSS modules so components can import typed tokens */
 
-.tokens {
+:root {
   /* --- Colors --- */
   --color-bg: #ffffff;
   --color-surface: #f8f9fa;

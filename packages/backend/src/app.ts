@@ -1,6 +1,8 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import rateLimit from '@fastify/rate-limit';
+import { healthRoute } from './routes/health.js';
+import { todoRoutes } from './routes/todos.js';
 
 const REQUIRED_ENV = ['DATABASE_URL', 'FRONTEND_URL'] as const;
 
@@ -29,7 +31,9 @@ export async function createApp() {
     timeWindow: '1 minute',
   });
 
-  // Routes will be registered here in subsequent stories
+  // Routes
+  await app.register(healthRoute);
+  await app.register(todoRoutes);
 
   return app;
 }
