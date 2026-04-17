@@ -29,7 +29,7 @@ This is a training exercise using the BMAD (spec-driven development) framework f
 | Components | Radix UI | Accessible primitives, unstyled (CSS Modules for styling), MIT licensed, AI-friendly source code — each component is self-contained and traceable. |
 | State management | TanStack Query | Optimistic updates + stale-while-revalidate + cache invalidation. Handles the SPA staleness problem cleanly. |
 | Styling | CSS Modules | Vanilla CSS feel, scoped by default, no build complexity. |
-| Pagination | Hybrid keyset + offset | Stable traversal via cursors, direct page jumps via offset fallback. User sees page numbers, not infinite scroll. |
+| Pagination | Offset (`LIMIT/OFFSET`) | Simple, sufficient for single-user scale. Page numbers with direct-jump links. No infinite scroll. Revisit only if evidence demands keyset. |
 | Automation | Makefile | Single entry point for all operations. Self-documenting. CI steps are make targets — no CI-specific scripts. |
 | Migrations | AB (expand/contract) | All migrations backward-compatible from day one. Production habit baked in early. |
 | IDs | UUIDv7 | Time-ordered for efficient indexing and natural insertion ordering. |
@@ -60,7 +60,7 @@ All three are npm workspace packages. `api-spec` is a dependency of both `fronte
 
 **In scope:**
 - CRUD operations (create, read, edit, toggle, delete)
-- Paginated list view (10/20/30/40/50 per page, page numbers)
+- Paginated list view (10/20/30/40/50 per page, offset pagination, page numbers)
 - Optimistic updates with graceful error handling
 - Input validation and sanitization (2000 char limit, XSS prevention, rate limiting)
 - Accessibility (Radix UI, WCAG AA, keyboard navigation, screen reader support)

@@ -43,11 +43,7 @@ A todo item consists of exactly these fields:
 
 - **Default:** 10 items per page
 - **User-configurable:** Dropdown selector for 10, 20, 30, 40, 50 items per page
-- **API supports two modes:**
-  - `?cursor=<value>&limit=N` — keyset pagination for stable traversal (preferred)
-  - `?page=N&limit=N` — offset pagination for direct page jumps (fallback)
-- **Precedence:** If both `cursor` and `page` are provided, `cursor` takes precedence and `page` is ignored.
-- **Invalid cursor:** If the cursor value is malformed or references a deleted row, the API returns `400` with error code `INVALID_CURSOR`. The frontend falls back to offset pagination for that request.
+- **API:** `?page=N&limit=N` — standard offset pagination (`LIMIT/OFFSET` with `created_at` index).
 - **Bounds:** `page >= 1`, `limit` between 1 and 50. Enforced at the API level. API max aligns with UI max.
 - **UI:** Page number navigation with direct-jump links. No infinite scrolling.
 
@@ -72,7 +68,7 @@ The API is defined by an **OpenAPI 3.1 specification** which is the single sourc
 | Method | Path | Description | Success | Error |
 |---|---|---|---|---|
 | `POST` | `/api/todos` | Create a todo | `201 Created` | `400` (validation), `429` (rate limit), `503` (DB down) |
-| `GET` | `/api/todos` | List todos (paginated) | `200 OK` | `400` (invalid params or `INVALID_CURSOR`), `503` |
+| `GET` | `/api/todos` | List todos (paginated) | `200 OK` | `400` (invalid params), `503` |
 | `PATCH` | `/api/todos/:id` | Update todo (completed and/or description). Upsert semantics — creates if ID missing. | `200 OK` | `400` (validation or malformed UUID), `429` (rate limit), `503` |
 | `DELETE` | `/api/todos/:id` | Delete a todo. Always 204, even if missing (idempotent). | `204 No Content` | `400` (malformed UUID), `429`, `503` |
 | `GET` | `/health` | Health check | `200 OK` | `503` (DB unreachable) |
