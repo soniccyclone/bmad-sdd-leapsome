@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: todo
+          POSTGRES_USER: todo
+          POSTGRES_PASSWORD: todo
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U todo"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgres://todo:todo@localhost:5432/todo
+      POSTGRES_DB: todo
+      POSTGRES_USER: todo
+      POSTGRES_PASSWORD: todo
+      NODE_ENV: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint OpenAPI spec
+        run: make spec-lint
+
+      - name: Generate types from spec
+        run: make codegen
+
+      - name: Compile-check generated output
+        run: npx tsc --noEmit --strict --moduleResolution bundler --module ESNext --target ES2022 packages/api-spec/generated/types.ts
+
+      - name: Create test database
+        run: psql "$DATABASE_URL" -c "CREATE DATABASE todo_test" || true
+
+      - name: Run migrations
+        run: make db-migrate
+
+      - name: Run tests
+        run: npm test --workspaces --if-present

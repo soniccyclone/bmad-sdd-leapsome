@@ -1,4 +1,6 @@
 import Fastify from 'fastify';
+import cors from '@fastify/cors';
+import rateLimit from '@fastify/rate-limit';
 
 const REQUIRED_ENV = ['DATABASE_URL', 'FRONTEND_URL'] as const;
 
@@ -16,7 +18,18 @@ export async function createApp() {
     },
   });
 
-  // Plugins and routes will be registered here in subsequent stories
+  // CORS — allow requests from the frontend origin
+  await app.register(cors, {
+    origin: process.env.FRONTEND_URL!,
+  });
+
+  // Rate limiting — 100 requests per minute per IP
+  await app.register(rateLimit, {
+    max: 100,
+    timeWindow: '1 minute',
+  });
+
+  // Routes will be registered here in subsequent stories
 
   return app;
 }

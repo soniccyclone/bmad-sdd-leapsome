@@ -1,6 +1,6 @@
 .PHONY: setup dev test test-e2e codegen spec-lint contract-check coverage \
        db-migrate db-seed db-studio db-wait db-test-ensure \
-       docker-up docker-down docs-build docs-serve help
+       docker-up docker-down docs-build docs-serve ci-check help
 
 setup:             ## First-time setup: install deps, env, codegen, migrate
 	cp -n .env.example .env || true
@@ -39,7 +39,7 @@ coverage:          ## Run tests with coverage and merge reports
 	npx nyc report --temp-dir coverage --report-dir coverage/combined --reporter=text --reporter=lcov
 
 db-migrate:        ## Run Drizzle migrations
-	npm run db:migrate --workspace=packages/backend
+	set -a && . ./.env && set +a && npm run db:migrate --workspace=packages/backend
 
 db-seed:           ## Populate dev database with sample todos
 	npm run db:seed --workspace=packages/backend
@@ -66,6 +66,12 @@ docker-up:         ## Start Docker Compose services
 
 docker-down:       ## Stop Docker Compose services
 	docker compose down
+
+ci-check:          ## CI gate: lint spec, generate types, compile-check generated output
+	$(MAKE) spec-lint
+	$(MAKE) codegen
+	npx tsc --noEmit --strict --moduleResolution bundler --module ESNext --target ES2022 packages/api-spec/generated/types.ts
+	@echo "CI check passed."
 
 docs-build:        ## Build API docs (Scalar) + MkDocs site
 	$(MAKE) codegen

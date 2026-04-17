@@ -1,0 +1,19 @@
+site_name: Todo App
+site_description: Documentation for the Todo App monorepo
+repo_url: https://github.com/your-org/todo-app
+
+theme:
+  name: material
+  palette:
+    scheme: default
+    primary: indigo
+
+nav:
+  - Home: index.md
+  - Setup: setup.md
+  - Architecture: architecture.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.highlight
+  - pymdownx.superfences
