@@ -1,0 +1,15 @@
+{
+  "name": "@todo/api-spec",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./types": "./generated/types.ts",
+    "./schemas": "./generated/schemas.ts",
+    "./client": "./generated/client.ts"
+  },
+  "scripts": {
+    "generate": "echo 'Codegen not yet configured — see OpenAPI story'",
+    "lint": "echo 'Spec lint not yet configured — see OpenAPI story'"
+  }
+}
