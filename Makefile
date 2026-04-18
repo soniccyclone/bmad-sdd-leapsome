@@ -1,4 +1,4 @@
-.PHONY: setup dev test test-e2e codegen spec-lint contract-check coverage \
+.PHONY: setup dev dev-db test test-e2e codegen spec-lint contract-check coverage \
        db-migrate db-seed db-studio db-wait db-test-ensure \
        docker-up docker-down docs-build docs-serve ci-check help
 
@@ -9,11 +9,15 @@ setup:             ## First-time setup: install deps, env, codegen, migrate
 	$(MAKE) db-wait
 	$(MAKE) db-migrate
 
-dev:               ## Start dev environment (Postgres + codegen + migrate + servers)
-	$(MAKE) docker-up
+dev:               ## Start dev environment (Postgres + codegen + migrate + servers + browser)
+	$(MAKE) dev-db
 	$(MAKE) db-wait
 	$(MAKE) db-migrate
-	npm run dev --workspaces --if-present
+	npm run dev --workspace=packages/backend &
+	npm run dev --workspace=packages/frontend
+
+dev-db:            ## Start only Postgres (for local dev, not full compose stack)
+	docker compose up -d postgres
 
 test:              ## Run all tests (unit + integration) — requires Postgres
 	$(MAKE) docker-up
