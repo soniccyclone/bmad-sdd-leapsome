@@ -38,8 +38,9 @@ test.describe('Todo App', () => {
     const checkbox = page.getByLabel(/Mark "Task to complete" as complete/);
     await checkbox.click();
 
-    // Wait for the checkbox to reflect the completed state
-    await expect(checkbox).toHaveAttribute('data-state', 'checked');
+    // After toggling, the aria-label changes to "incomplete" — re-query with the new label
+    const checkedCheckbox = page.getByLabel(/Mark "Task to complete" as incomplete/);
+    await expect(checkedCheckbox).toHaveAttribute('data-state', 'checked');
 
     // Verify completed styling (the description span should have the completed class)
     const description = page.getByText('Task to complete');

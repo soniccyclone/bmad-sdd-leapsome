@@ -25,9 +25,10 @@ export async function createApp() {
     origin: process.env.FRONTEND_URL!,
   });
 
-  // Rate limiting — 100 requests per minute per IP
+  // Rate limiting — configurable via RATE_LIMIT_MAX env var (default 100)
+  const rateLimitMax = Number(process.env.RATE_LIMIT_MAX) || 100;
   await app.register(rateLimit, {
-    max: 100,
+    max: rateLimitMax,
     timeWindow: '1 minute',
   });
 
