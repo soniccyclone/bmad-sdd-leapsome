@@ -20,10 +20,14 @@ services:
       postgres:
         condition: service_healthy
     env_file: .env
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgres://todo:todo@postgres:5432/todo
+      FRONTEND_URL: http://localhost:8080
     ports:
       - "3000:3000"
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/health"]
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:3000/health"]
       interval: 10s
       timeout: 3s
       retries: 3

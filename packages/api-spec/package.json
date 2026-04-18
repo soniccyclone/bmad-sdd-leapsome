@@ -4,14 +4,24 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./types": "./generated/types.ts",
-    "./schemas": "./generated/schemas.ts",
-    "./client": "./generated/client.ts"
+    "./types": {
+      "types": "./generated/types.ts",
+      "default": "./dist/types.js"
+    },
+    "./schemas": {
+      "types": "./generated/schemas.ts",
+      "default": "./dist/schemas.js"
+    },
+    "./client": {
+      "types": "./generated/client.ts",
+      "default": "./dist/client.js"
+    }
   },
   "scripts": {
     "generate": "npm run generate:types && npm run generate:schemas",
     "generate:types": "openapi-typescript openapi.yaml -o generated/types.ts",
     "generate:schemas": "openapi-zod-client openapi.yaml -o generated/schemas.ts --no-with-alias",
+    "build": "tsc",
     "lint": "echo 'Spec lint not yet configured — needs @redocly/cli'"
   },
   "dependencies": {
@@ -20,5 +30,8 @@
     "openapi-typescript": "^7.13.0",
     "openapi-zod-client": "^1.18.3",
     "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
   }
 }

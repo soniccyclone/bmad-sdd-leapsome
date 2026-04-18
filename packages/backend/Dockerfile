@@ -21,7 +21,10 @@ COPY packages/backend/ packages/backend/
 # 4. Run codegen (generated files are gitignored, so must be produced here)
 RUN npm run generate --workspace=packages/api-spec
 
-# 5. Build backend (tsc -> dist/)
+# 5. Build api-spec (compile generated .ts to .js for Node.js runtime)
+RUN npm run build --workspace=packages/api-spec
+
+# 6. Build backend (tsc -> dist/)
 RUN npm run build --workspace=packages/backend
 
 # ── Production ───────────────────────────────────────────────
@@ -43,8 +46,9 @@ RUN npm ci --omit=dev
 # Copy built backend
 COPY --from=builder /app/packages/backend/dist packages/backend/dist
 
-# Copy api-spec generated code (backend imports @todo/api-spec at runtime)
+# Copy api-spec generated source and compiled JS (backend imports @todo/api-spec at runtime)
 COPY --from=builder /app/packages/api-spec/generated packages/api-spec/generated
+COPY --from=builder /app/packages/api-spec/dist packages/api-spec/dist
 
 USER app
 
