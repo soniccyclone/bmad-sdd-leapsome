@@ -16,18 +16,33 @@
 | 1.2 | Architecture edge case review | BMAD edge case hunter skill | Found 12 paths: db-wait timeout, optimistic create wrong page, $onUpdate bypass, empty PATCH body, health check timeout, nginx non-root, hardcoded pg username, test needs Postgres, Dockerfile lockfile, totalPages=0, double-escape, CORS undefined. | All 12 fixed. |
 | 1.3 | Story creation | Claude Code + beads CLI | Created 8 epics + 35 stories with acceptance criteria and dependency chains. Parallel `bd create` calls for efficiency. | 43 issues, 9 ready to work, 34 blocked by dependencies. |
 | 1.4 | Test strategy | Claude Code + BMAD adversarial review | Test strategy produced then reviewed — 10 findings (parallel isolation, test DB creation, Playwright Docker helper, mock strategy, browser matrix, coverage merge, etc.). | All 10 addressed. |
+| 2.0 | AI integration log | Claude Code | Created this log file to track AI usage throughout the project. | Log structure established for ongoing updates. |
+| 2.1 | Monorepo scaffold | Claude Code | Generated package.json files, tsconfig, .env.example, .gitignore. | Verified with `npm install` + workspace linking. |
+| 2.1 | Docker Compose + Makefile | Claude Code | Wrote docker-compose.yml, Makefile with all targets. | Fixed macOS `timeout` compatibility (replaced with portable shell loop). |
+| 2.1 | OpenAPI spec + codegen | Claude Code | Wrote openapi.yaml, configured codegen pipeline (openapi-typescript + openapi-zod-client + openapi-fetch). Installed Redocly for spec linting. | Full spec-first contract established with generated types and validation. |
+| 2.1 | Sanitization module | Claude Code | Wrote sanitize.ts + 24 unit tests. First attempt had entity encode/decode issues (double-encoding risk). | Simplified to strip-tags-only approach since React handles output escaping. All 24 tests pass. |
+| 2.2-2.3 | Parallel implementation | Claude Code (3 subagents) | 3 subagents built backend (Fastify setup, Drizzle schema, 5 route handlers), frontend (App shell, 6 TanStack Query hooks, 5 React components with CSS Modules), and CI/docs (GitHub Actions, MkDocs) simultaneously. | Full stack implemented in parallel with non-overlapping file scopes. |
+| 2.4 | E2E tests | Claude Code (subagent) | Wrote 8 Playwright tests (7 functional + 1 accessibility). Configured webServer to auto-start backend + frontend. | All critical user journeys covered. |
+| 3 | Docker | Claude Code (subagent) | Wrote Dockerfiles + nginx.conf. Docker verification agent found and fixed 3 production issues: api-spec .ts exports failing at runtime (added tsc build), pino-pretty not in production image (NODE_ENV override), IPv6 localhost resolution in Alpine (use 127.0.0.1). | Production containers verified and working. |
+| 4 | QA | Claude Code (subagent) | Produced coverage, accessibility, and security reports by reading actual source code. | Reports generated but based on source analysis, not runtime metrics. |
 
 ## MCP Server Usage
 
-_To be filled during implementation — Postman, Chrome DevTools, Playwright MCP usage._
+No MCP servers were used in this project. All development was done via Claude Code CLI with BMAD skills. The Postman MCP and Chrome DevTools MCP mentioned in the Leapsome requirements were not utilized — API validation was handled by the OpenAPI codegen + Zod contract testing approach instead.
 
 ## Test Generation
 
-_To be filled during implementation — how AI assists in generating test cases, what it misses._
+- AI generated 24 unit tests for sanitization (first attempt had 4 failures due to entity encoding logic — AI diagnosed and simplified the approach)
+- AI generated 8 E2E Playwright tests covering all user journeys
+- AI identified test gaps in coverage report: route handler integration tests and component tests are the priority for reaching 70%
+- What AI missed: didn't generate integration tests or component tests during initial implementation — focused on unit + E2E, leaving the middle of the pyramid thin
 
 ## Debugging with AI
 
-_To be filled during implementation — cases where AI helped debug issues._
+- **Sanitization double-encoding:** AI's initial encode-then-decode pipeline caused test failures. AI diagnosed that React handles output escaping, making entity encoding unnecessary. Simplified to tag-stripping only.
+- **Docker production issues:** Verification agent found 3 issues that only manifest in production containers (not dev). AI diagnosed each from container logs and fixed.
+- **Makefile macOS compatibility:** `timeout` command doesn't exist on macOS. AI replaced with portable shell loop.
+- **Drizzle env loading:** drizzle-kit push didn't load .env. AI tried tsx --env-file approach (failed), then source .env in Makefile (worked).
 
 ## Limitations Encountered
 
@@ -36,3 +51,8 @@ _To be filled during implementation — cases where AI helped debug issues._
 | 1.2 | BMAD party mode agent manifest was empty — bmm module not installed | User ran interactive `npx bmad-method install` manually since CLI required TUI input |
 | 1.2 | Edge case hunter and adversarial review output raw JSON/findings — user had to ask for processing | Reviewer role should auto-process findings into actionable format |
 | 1.1-1.4 | Each BMAD review skill invocation requires re-reading the full document | Could benefit from incremental review on diffs only |
+| 2.1 | BMAD party mode agent manifest was empty on fresh install — needed interactive TUI installer | Claude Code can't automate interactive TUI; user ran manually |
+| 2.2-2.3 | Parallel subagents can produce conflicting changes if they modify the same files | Orchestrator must carefully scope prompts to non-overlapping files |
+| 2.2-2.3 | AI generated optimistic update code with pseudocode comments initially | Adversarial review caught this; AI rewrote with real implementation |
+| 2-4 | No MCP servers used despite Leapsome requirements mentioning them | Spec-first approach (OpenAPI codegen + Zod) made MCP less necessary |
+| 4 | Coverage report is based on source code analysis, not actual coverage metrics | Needs real test execution with coverage tooling to validate |
