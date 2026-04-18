@@ -15,10 +15,16 @@ export default defineConfig({
     },
     coverage: {
       provider: 'v8',
+      include: ['src/**/*.{ts,tsx}'],
       exclude: [
         '**/generated/**',
         '**/*.config.ts',
+        '**/*.test.{ts,tsx}',
         '**/test-setup.ts',
+        '**/main.tsx',
+        '**/vite-env.d.ts',
+        'e2e/**',
+        'dist/**',
       ],
     },
   },

@@ -12,11 +12,14 @@ export default defineConfig({
     },
     coverage: {
       provider: 'v8',
+      include: ['src/**/*.ts'],
       exclude: [
         '**/generated/**',
         '**/*.config.ts',
+        '**/*.test.ts',
         '**/migrations/**',
         '**/seed.ts',
+        '**/server.ts',
       ],
     },
   },
