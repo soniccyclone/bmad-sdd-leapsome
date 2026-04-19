@@ -27,10 +27,12 @@ jobs:
 
     env:
       DATABASE_URL: postgres://todo:todo@localhost:5432/todo
+      FRONTEND_URL: http://localhost:5173
       POSTGRES_DB: todo
       POSTGRES_USER: todo
       POSTGRES_PASSWORD: todo
       NODE_ENV: test
+      LOG_LEVEL: silent
 
     steps:
       - uses: actions/checkout@v4

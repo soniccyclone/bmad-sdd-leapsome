@@ -43,7 +43,7 @@ coverage:          ## Run tests with coverage and merge reports
 	npx nyc report --temp-dir coverage --report-dir coverage/combined --reporter=text --reporter=lcov
 
 db-migrate:        ## Run Drizzle migrations
-	set -a && . ./.env && set +a && npm run db:migrate --workspace=packages/backend
+	@if [ -f .env ]; then set -a && . ./.env && set +a; fi && npm run db:migrate --workspace=packages/backend
 
 db-seed:           ## Populate dev database with sample todos
 	npm run db:seed --workspace=packages/backend
