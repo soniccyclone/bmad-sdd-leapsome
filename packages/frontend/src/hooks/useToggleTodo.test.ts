@@ -4,12 +4,12 @@ import { createElement, type ReactNode } from 'react';
 import { useToggleTodo } from './useToggleTodo.js';
 
 // Mock the API client
-vi.mock('@todo/api-spec/client', () => ({
-  client: {
-    GET: vi.fn(),
-    POST: vi.fn(),
-    PATCH: vi.fn(),
-    DELETE: vi.fn(),
+vi.mock('../lib/api.js', () => ({
+  api: {
+    get: vi.fn(),
+    post: vi.fn(),
+    patch: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
@@ -40,11 +40,8 @@ describe('useToggleTodo', () => {
       updatedAt: '2024-01-01T00:00:00Z',
     };
 
-    const { client } = await import('@todo/api-spec/client');
-    (client.PATCH as ReturnType<typeof vi.fn>).mockResolvedValue({
-      data: mockTodo,
-      error: undefined,
-    });
+    const { api } = await import('../lib/api.js');
+    (api.patch as ReturnType<typeof vi.fn>).mockResolvedValue(mockTodo);
 
     const { result } = renderHook(() => useToggleTodo(), {
       wrapper: createWrapper(),
@@ -58,18 +55,18 @@ describe('useToggleTodo', () => {
       expect(result.current.isSuccess).toBe(true);
     });
 
-    expect(client.PATCH).toHaveBeenCalledWith('/api/todos/{id}', {
-      params: { path: { id: 'todo-1' } },
-      body: { completed: true },
-    });
+    expect(api.patch).toHaveBeenCalledWith(
+      '/api/todos/:id',
+      { completed: true },
+      { params: { id: 'todo-1' } },
+    );
   });
 
   it('handles error from API', async () => {
-    const { client } = await import('@todo/api-spec/client');
-    (client.PATCH as ReturnType<typeof vi.fn>).mockResolvedValue({
-      data: undefined,
-      error: { error: { message: 'Rate limit', code: 'RATE_LIMIT_EXCEEDED' } },
-    });
+    const { api } = await import('../lib/api.js');
+    (api.patch as ReturnType<typeof vi.fn>).mockRejectedValue(
+      new Error('Rate limit'),
+    );
 
     const { result } = renderHook(() => useToggleTodo(), {
       wrapper: createWrapper(),

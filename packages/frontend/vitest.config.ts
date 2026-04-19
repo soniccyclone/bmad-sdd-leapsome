@@ -10,7 +10,6 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@todo/api-spec/client': resolve(__dirname, '../api-spec/src/client.ts'),
       '@todo/api-spec/schemas': resolve(apiSpecGenerated, 'schemas.ts'),
       '@todo/api-spec/types': resolve(apiSpecGenerated, 'types.ts'),
     },

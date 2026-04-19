@@ -16,7 +16,6 @@
     "@radix-ui/react-toast": "^1.2.0",
     "@tanstack/react-query": "^5.0.0",
     "@todo/api-spec": "*",
-    "openapi-fetch": "^0.12.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

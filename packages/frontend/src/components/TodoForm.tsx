@@ -11,7 +11,7 @@ interface TodoFormProps {
 export function TodoForm({ page, limit }: TodoFormProps) {
   const [description, setDescription] = useState('');
   const { isBackendDown } = useAppContext();
-  const createMutation = useCreateTodo(page, limit);
+  const createMutation = useCreateTodo();
 
   const trimmed = description.trim();
   const isDisabled = isBackendDown || createMutation.isPending || !trimmed;

@@ -5,9 +5,9 @@ import { useHealthCheck } from './useHealthCheck.js';
 import { AppContextProvider } from '../context/AppContext.js';
 
 // Mock the API client
-vi.mock('@todo/api-spec/client', () => ({
-  client: {
-    GET: vi.fn(),
+vi.mock('../lib/api.js', () => ({
+  api: {
+    get: vi.fn(),
   },
 }));
 
@@ -33,10 +33,9 @@ describe('useHealthCheck', () => {
   });
 
   it('returns isBackendDown=false and isRecovering=false initially', async () => {
-    const { client } = await import('@todo/api-spec/client');
-    (client.GET as ReturnType<typeof vi.fn>).mockResolvedValue({
-      data: { status: 'ok' },
-      error: undefined,
+    const { api } = await import('../lib/api.js');
+    (api.get as ReturnType<typeof vi.fn>).mockResolvedValue({
+      status: 'ok',
     });
 
     const { result } = renderHook(() => useHealthCheck(), {
@@ -49,8 +48,8 @@ describe('useHealthCheck', () => {
   });
 
   it('sets isBackendDown=true when health check fails', async () => {
-    const { client } = await import('@todo/api-spec/client');
-    (client.GET as ReturnType<typeof vi.fn>).mockRejectedValue(
+    const { api } = await import('../lib/api.js');
+    (api.get as ReturnType<typeof vi.fn>).mockRejectedValue(
       new Error('Network error'),
     );
 
