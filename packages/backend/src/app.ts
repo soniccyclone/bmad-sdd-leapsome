@@ -26,7 +26,8 @@ export async function createApp() {
   });
 
   // Rate limiting — configurable via RATE_LIMIT_MAX env var (default 100)
-  const rateLimitMax = Number(process.env.RATE_LIMIT_MAX) || 100;
+  const parsed = Number(process.env.RATE_LIMIT_MAX);
+  const rateLimitMax = Number.isFinite(parsed) && parsed > 0 ? parsed : 100;
   await app.register(rateLimit, {
     max: rateLimitMax,
     timeWindow: '1 minute',

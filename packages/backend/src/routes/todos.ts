@@ -24,16 +24,9 @@ function errorResponse(code: string, message: string) {
 }
 
 function isDbError(err: unknown): boolean {
-  // postgres.js errors: check for Postgres-specific properties
-  // Postgres error codes are 5-char alphanumeric (e.g., '23505', '42P01')
-  if (!(err instanceof Error)) return false;
-  if (err.constructor.name === 'PostgresError') return true;
-  if ('severity' in err) return true;
-  if ('code' in err) {
-    const code = (err as { code: unknown }).code;
-    return typeof code === 'string' && /^[A-Z0-9]{5}$/.test(code);
-  }
-  return false;
+  // postgres.js errors: check for Postgres-specific properties rather than
+  // constructor.name which breaks under minification
+  return err instanceof Error && 'severity' in err && typeof (err as any).code === 'string';
 }
 
 export async function todoRoutes(app: FastifyInstance) {
@@ -71,6 +64,10 @@ export async function todoRoutes(app: FastifyInstance) {
         })
         .returning();
 
+      if (!created) {
+        return reply.status(500).send(errorResponse('SERVICE_UNAVAILABLE', 'Insert returned no rows'));
+      }
+
       return reply.status(201).send({
         id: created.id,
         description: created.description,
@@ -105,7 +102,8 @@ export async function todoRoutes(app: FastifyInstance) {
       const db = getDb();
 
       // Get total count first
-      const [{ total }] = await db.select({ total: count() }).from(todos);
+      const countResult = await db.select({ total: count() }).from(todos);
+      const total = countResult[0]?.total ?? 0;
 
       const totalPages = Math.ceil(total / limit);
 
@@ -210,6 +208,10 @@ export async function todoRoutes(app: FastifyInstance) {
           set: setClause,
         })
         .returning();
+
+      if (!result) {
+        return reply.status(500).send(errorResponse('SERVICE_UNAVAILABLE', 'Upsert returned no rows'));
+      }
 
       return reply.status(200).send({
         id: result.id,

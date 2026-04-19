@@ -44,6 +44,18 @@ export function TodoItem({ todo }: TodoItemProps) {
 
   const errorMessage = dismissedError ? null : getErrorMessage(mutationError);
 
+  // Fix 8: Reset savingRef on unmount in case queueMicrotask hasn't run yet
+  useEffect(() => {
+    return () => {
+      savingRef.current = false;
+    };
+  }, []);
+
+  // Fix 4: Sync editValue when todo.description changes from parent while not editing
+  useEffect(() => {
+    if (!isEditing) setEditValue(todo.description);
+  }, [todo.description, isEditing]);
+
   // F16: Auto-dismiss mutation errors after 5 seconds
   useEffect(() => {
     if (!mutationError) {
@@ -65,10 +77,12 @@ export function TodoItem({ todo }: TodoItemProps) {
 
   function handleToggle(checked: boolean | 'indeterminate') {
     if (checked === 'indeterminate') return;
+    if (toggleMutation.isPending) return;
     toggleMutation.mutate({ id: todo.id, completed: checked });
   }
 
   function handleDelete() {
+    if (deleteMutation.isPending) return;
     deleteMutation.mutate({ id: todo.id });
   }
 
@@ -92,7 +106,16 @@ export function TodoItem({ todo }: TodoItemProps) {
     if (savingRef.current) return;
     savingRef.current = true;
     const trimmed = editValue.trim();
-    if (trimmed && trimmed !== todo.description) {
+    if (!trimmed) {
+      // Empty input: cancel edit and revert to original description
+      setEditValue(todo.description);
+      setIsEditing(false);
+      queueMicrotask(() => {
+        savingRef.current = false;
+      });
+      return;
+    }
+    if (trimmed !== todo.description) {
       updateDescriptionMutation.mutate({ id: todo.id, description: trimmed });
     }
     setIsEditing(false);

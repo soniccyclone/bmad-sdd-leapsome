@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
 import { ErrorBoundary } from './components/ErrorBoundary.js';
 import { ErrorBanner } from './components/ErrorBanner.js';
@@ -43,51 +43,64 @@ function TodoApp() {
     setPageAnnouncement(message);
   }
 
+  // Fix 6: Auto-navigate to previous page when last item on current page is deleted
+  useEffect(() => {
+    if (data && data.data.length === 0 && page > 1) {
+      setPage(page - 1);
+    }
+  }, [data, page]);
+
   return (
-    <main
-      style={{
-        maxWidth: 'var(--max-width)',
-        margin: '0 auto',
-        padding: 'var(--space-6) var(--space-4)',
-        fontFamily: 'var(--font-family)',
-      }}
-    >
-      <h1
+    <>
+      <main
         style={{
-          fontSize: 'var(--font-size-2xl)',
-          fontWeight: 'var(--font-weight-bold)',
-          color: 'var(--color-text)',
-          marginBottom: 'var(--space-6)',
+          maxWidth: 'var(--max-width)',
+          margin: '0 auto',
+          padding: 'var(--space-6) var(--space-4)',
+          fontFamily: 'var(--font-family)',
         }}
       >
-        Todo App
-      </h1>
+        <h1
+          style={{
+            fontSize: 'var(--font-size-2xl)',
+            fontWeight: 'var(--font-weight-bold)',
+            color: 'var(--color-text)',
+            marginBottom: 'var(--space-6)',
+          }}
+        >
+          Todo App
+        </h1>
 
-      <div style={{ marginBottom: 'var(--space-6)' }}>
-        <TodoForm page={page} limit={limit} />
+        <div style={{ marginBottom: 'var(--space-6)' }}>
+          <TodoForm page={page} limit={limit} />
+        </div>
+
+        {(isLoading || (isError && !isLoading)) && (
+          <LoadingState isError={isError && !isLoading} onRetry={handleRetry} />
+        )}
+
+        {data && !isLoading && (
+          <>
+            <TodoList todos={data.data} total={data.pagination.total} isLoading={isLoading} />
+
+            <div style={{ marginTop: 'var(--space-6)' }}>
+              <Pagination
+                page={data.pagination.page}
+                totalPages={data.pagination.totalPages}
+                limit={limit}
+                onPageChange={handlePageChange}
+                onLimitChange={handleLimitChange}
+                onPageAnnounce={handlePageAnnounce}
+              />
+            </div>
+          </>
+        )}
+      </main>
+
+      <div aria-live="polite" aria-atomic="true" id="pagination-announcer">
+        {pageAnnouncement}
       </div>
-
-      {(isLoading || (isError && !isLoading)) && (
-        <LoadingState isError={isError && !isLoading} onRetry={handleRetry} />
-      )}
-
-      {data && !isLoading && (
-        <>
-          <TodoList todos={data.data} total={data.pagination.total} isLoading={isLoading} />
-
-          <div style={{ marginTop: 'var(--space-6)' }}>
-            <Pagination
-              page={data.pagination.page}
-              totalPages={data.pagination.totalPages}
-              limit={limit}
-              onPageChange={handlePageChange}
-              onLimitChange={handleLimitChange}
-              onPageAnnounce={handlePageAnnounce}
-            />
-          </div>
-        </>
-      )}
-    </main>
+    </>
   );
 }
 
@@ -102,9 +115,6 @@ export function App() {
           </div>
 
           <TodoApp />
-
-          {/* Polite region for pagination announcements */}
-          <div aria-live="polite" aria-atomic="true" id="pagination-announcer" />
         </AppContextProvider>
       </ErrorBoundary>
     </QueryClientProvider>

@@ -21,6 +21,9 @@ export function useTodos(page: number = 1, limit: number = 10) {
       if (error) {
         throw new Error(error?.error?.message ?? 'An unexpected error occurred');
       }
+      if (!data) {
+        throw new Error('Empty response from server');
+      }
       return data;
     },
   });

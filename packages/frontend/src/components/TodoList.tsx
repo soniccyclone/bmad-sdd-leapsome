@@ -16,6 +16,16 @@ export function TodoList({ todos, total, isLoading = false }: TodoListProps) {
     return <EmptyState />;
   }
 
+  if (todos.length === 0 && total > 0) {
+    return (
+      <div className={styles.list} role="list" aria-label="Todo list">
+        <p style={{ textAlign: 'center', color: 'var(--color-text-secondary)', padding: 'var(--space-4)' }}>
+          No items on this page.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.list} role="list" aria-label="Todo list" aria-busy={isLoading}>
       {todos.map((todo) => (

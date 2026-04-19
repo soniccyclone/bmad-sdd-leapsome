@@ -24,7 +24,9 @@ export function sanitize(input: string): string {
   // 3. Strip HTML tags — loop until stable to prevent bypass via nested tags
   //    e.g. `<scr<script>ipt>` becomes `<script>` after one pass
   let prev: string;
+  let iterations = 0;
   do {
+    if (++iterations > 10) break;
     prev = result;
     result = result.replace(HTML_TAG_REGEX, '');
   } while (result !== prev);

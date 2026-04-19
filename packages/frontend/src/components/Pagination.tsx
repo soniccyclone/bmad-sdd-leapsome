@@ -55,6 +55,7 @@ export function Pagination({
   }
 
   function handlePageClick(newPage: number) {
+    if (newPage === page) return;
     onPageChange(newPage);
     // Announce page change to screen readers via callback
     onPageAnnounce?.(`Page ${newPage} of ${totalPages}`);

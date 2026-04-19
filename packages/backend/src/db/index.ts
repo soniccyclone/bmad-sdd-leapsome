@@ -35,8 +35,11 @@ export function getConnection(): ReturnType<typeof postgres> {
 /** Close the connection pool and reset state */
 export async function closeDb(): Promise<void> {
   if (connection) {
-    await connection.end();
-    connection = null;
-    db = null;
+    try {
+      await connection.end();
+    } finally {
+      connection = null;
+      db = null;
+    }
   }
 }
