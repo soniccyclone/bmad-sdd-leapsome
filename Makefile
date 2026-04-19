@@ -1,6 +1,6 @@
 .PHONY: setup dev dev-db test test-e2e codegen spec-lint contract-check coverage \
        db-migrate db-seed db-studio db-wait db-test-ensure \
-       docker-up docker-down docs-build docs-serve ci-check help
+       docker-up docker-up-prod docker-up-test docker-down docs-build docs-serve ci-check help
 
 setup:             ## First-time setup: install deps, env, codegen, migrate
 	cp -n .env.example .env || true
@@ -65,11 +65,17 @@ db-test-ensure:    ## Create test database if it doesn't exist
 		"SELECT 1 FROM pg_database WHERE datname = 'todo_test'" | grep -q 1 \
 		|| docker compose exec postgres psql -U $${POSTGRES_USER:-todo} -c "CREATE DATABASE todo_test"
 
-docker-up:         ## Start Docker Compose services
-	docker compose up -d
+docker-up:         ## Start Postgres only (for local dev)
+	docker compose up -d postgres
 
-docker-down:       ## Stop Docker Compose services
-	docker compose down
+docker-up-prod:    ## Start full production stack (Postgres + backend + frontend)
+	docker compose --profile prod up -d --build
+
+docker-up-test:    ## Start Postgres + create test database
+	docker compose --profile test up -d
+
+docker-down:       ## Stop all Docker Compose services
+	docker compose --profile prod --profile test down
 
 ci-check:          ## CI gate: lint spec, generate types, compile-check generated output
 	$(MAKE) spec-lint
