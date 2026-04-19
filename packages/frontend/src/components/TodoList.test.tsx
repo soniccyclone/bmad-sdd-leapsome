@@ -78,7 +78,7 @@ describe('TodoList', () => {
   it('renders EmptyState when todos=[] and total=0', () => {
     renderWithProviders(<TodoList todos={[]} total={0} />);
     expect(screen.getByRole('heading', { name: /no todos yet/i })).toBeInTheDocument();
-    expect(screen.getByText(/add your first todo using the form above/i)).toBeInTheDocument();
+    expect(screen.getByText(/add your first todo above to get started/i)).toBeInTheDocument();
   });
 
   it('does NOT render EmptyState when todos=[] but total > 0', () => {

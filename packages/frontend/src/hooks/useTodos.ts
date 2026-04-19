@@ -19,7 +19,7 @@ export function useTodos(page: number = 1, limit: number = 10) {
         params: { query: { page, limit } },
       });
       if (error) {
-        throw new Error(error.error.message);
+        throw new Error(error?.error?.message ?? 'An unexpected error occurred');
       }
       return data;
     },

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import type { FastifyInstance } from 'fastify';
 import { sql } from 'drizzle-orm';
-import { db } from '../db/index.js';
+import { getDb } from '../db/index.js';
 import { todos } from '../db/schema.js';
 import { createApp } from '../app.js';
 import { schemas } from '@todo/api-spec/schemas';
@@ -19,7 +19,7 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
-  await db.execute(sql`TRUNCATE TABLE todos`);
+  await getDb().execute(sql`TRUNCATE TABLE todos`);
 });
 
 // ---------------------------------------------------------------------------

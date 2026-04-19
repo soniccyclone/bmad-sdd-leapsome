@@ -18,7 +18,7 @@ export function TodoForm({ page, limit }: TodoFormProps) {
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!trimmed) return;
+    if (isDisabled) return;
 
     createMutation.mutate(
       { description: trimmed },
@@ -30,6 +30,12 @@ export function TodoForm({ page, limit }: TodoFormProps) {
     );
   }
 
+  function handleButtonClick(e: React.MouseEvent<HTMLButtonElement>) {
+    if (isDisabled) {
+      e.preventDefault();
+    }
+  }
+
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
       <input
@@ -39,12 +45,14 @@ export function TodoForm({ page, limit }: TodoFormProps) {
         onChange={(e) => setDescription(e.target.value)}
         placeholder={isBackendDown ? 'Backend unavailable...' : 'What needs to be done?'}
         disabled={isBackendDown}
+        maxLength={2000}
         aria-label="New todo description"
       />
       <button
         type="submit"
         className={styles.submitButton}
-        disabled={isDisabled}
+        aria-disabled={isDisabled}
+        onClick={handleButtonClick}
         aria-label="Add todo"
       >
         {createMutation.isPending ? 'Adding...' : 'Add'}

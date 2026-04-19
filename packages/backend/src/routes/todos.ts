@@ -1,8 +1,8 @@
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
-import { eq, sql, count, asc } from 'drizzle-orm';
+import { eq, count, asc } from 'drizzle-orm';
 import { uuidv7 } from 'uuidv7';
-import { db } from '../db/index.js';
+import { getDb } from '../db/index.js';
 import { todos } from '../db/schema.js';
 import { sanitize, validateDescription } from '../lib/sanitize.js';
 import { schemas } from '@todo/api-spec/schemas';
@@ -24,13 +24,16 @@ function errorResponse(code: string, message: string) {
 }
 
 function isDbError(err: unknown): boolean {
-  // postgres.js errors and generic DB errors
-  return (
-    err instanceof Error &&
-    (err.constructor.name === 'PostgresError' ||
-      'severity' in err ||
-      'code' in err)
-  );
+  // postgres.js errors: check for Postgres-specific properties
+  // Postgres error codes are 5-char alphanumeric (e.g., '23505', '42P01')
+  if (!(err instanceof Error)) return false;
+  if (err.constructor.name === 'PostgresError') return true;
+  if ('severity' in err) return true;
+  if ('code' in err) {
+    const code = (err as { code: unknown }).code;
+    return typeof code === 'string' && /^[A-Z0-9]{5}$/.test(code);
+  }
+  return false;
 }
 
 export async function todoRoutes(app: FastifyInstance) {
@@ -57,7 +60,7 @@ export async function todoRoutes(app: FastifyInstance) {
       const id = uuidv7();
       const now = new Date();
 
-      const [created] = await db
+      const [created] = await getDb()
         .insert(todos)
         .values({
           id,
@@ -99,17 +102,27 @@ export async function todoRoutes(app: FastifyInstance) {
       const { page, limit } = parseResult.data;
       const offset = (page - 1) * limit;
 
-      const [rows, [{ total }]] = await Promise.all([
-        db
-          .select()
-          .from(todos)
-          .orderBy(asc(todos.createdAt), asc(todos.id))
-          .limit(limit)
-          .offset(offset),
-        db.select({ total: count() }).from(todos),
-      ]);
+      const db = getDb();
 
-      const totalPages = Math.ceil(total / limit) || 0;
+      // Get total count first
+      const [{ total }] = await db.select({ total: count() }).from(todos);
+
+      const totalPages = Math.ceil(total / limit);
+
+      // B16: If offset >= total, return empty data without running a pointless OFFSET query
+      if (offset >= total && total > 0) {
+        return reply.send({
+          data: [],
+          pagination: { page, limit, total, totalPages },
+        });
+      }
+
+      const rows = await db
+        .select()
+        .from(todos)
+        .orderBy(asc(todos.createdAt), asc(todos.id))
+        .limit(limit)
+        .offset(offset);
 
       return reply.send({
         data: rows.map((row) => ({
@@ -152,7 +165,13 @@ export async function todoRoutes(app: FastifyInstance) {
         );
       }
 
-      const updates = parseResult.data;
+      // B6: Only pick allowed fields — .passthrough() in the generated schema
+      // lets extra fields through, so we manually whitelist here.
+      const { description: rawDescription, completed: rawCompleted } = parseResult.data;
+      const updates = {
+        ...(rawDescription !== undefined ? { description: rawDescription } : {}),
+        ...(rawCompleted !== undefined ? { completed: rawCompleted } : {}),
+      };
 
       // Sanitize description if provided
       let sanitizedDescription: string | undefined;
@@ -177,7 +196,7 @@ export async function todoRoutes(app: FastifyInstance) {
       }
 
       // Upsert: insert with defaults if not exists, update if exists
-      const [result] = await db
+      const [result] = await getDb()
         .insert(todos)
         .values({
           id,
@@ -222,7 +241,7 @@ export async function todoRoutes(app: FastifyInstance) {
         );
       }
 
-      await db.delete(todos).where(eq(todos.id, id));
+      await getDb().delete(todos).where(eq(todos.id, id));
 
       return reply.status(204).send();
     } catch (err) {

@@ -24,7 +24,9 @@ function getErrorMessage(error: Error | null): string | null {
 export function TodoItem({ todo }: TodoItemProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editValue, setEditValue] = useState(todo.description);
+  const [dismissedError, setDismissedError] = useState(false);
   const editInputRef = useRef<HTMLInputElement>(null);
+  const savingRef = useRef(false);
 
   const toggleMutation = useToggleTodo();
   const deleteMutation = useDeleteTodo();
@@ -40,7 +42,19 @@ export function TodoItem({ todo }: TodoItemProps) {
     deleteMutation.error ||
     updateDescriptionMutation.error;
 
-  const errorMessage = getErrorMessage(mutationError);
+  const errorMessage = dismissedError ? null : getErrorMessage(mutationError);
+
+  // F16: Auto-dismiss mutation errors after 5 seconds
+  useEffect(() => {
+    if (!mutationError) {
+      setDismissedError(false);
+      return;
+    }
+    const timer = setTimeout(() => {
+      setDismissedError(true);
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, [mutationError]);
 
   useEffect(() => {
     if (isEditing && editInputRef.current) {
@@ -73,12 +87,19 @@ export function TodoItem({ todo }: TodoItemProps) {
     }
   }
 
+  // F4: Use savingRef to prevent double-fire from Enter + onBlur
   function saveEdit() {
+    if (savingRef.current) return;
+    savingRef.current = true;
     const trimmed = editValue.trim();
     if (trimmed && trimmed !== todo.description) {
       updateDescriptionMutation.mutate({ id: todo.id, description: trimmed });
     }
     setIsEditing(false);
+    // Reset the flag asynchronously so subsequent edits work
+    queueMicrotask(() => {
+      savingRef.current = false;
+    });
   }
 
   function cancelEdit() {
@@ -119,6 +140,7 @@ export function TodoItem({ todo }: TodoItemProps) {
             onChange={(e) => setEditValue(e.target.value)}
             onKeyDown={handleEditKeyDown}
             onBlur={saveEdit}
+            maxLength={2000}
             aria-label={`Edit description for "${todo.description}"`}
           />
         ) : (

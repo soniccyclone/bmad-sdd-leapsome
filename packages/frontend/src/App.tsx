@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
 import { ErrorBoundary } from './components/ErrorBoundary.js';
 import { ErrorBanner } from './components/ErrorBanner.js';
+import { LoadingState } from './components/LoadingState.js';
 import { TodoForm } from './components/TodoForm.js';
 import { TodoList } from './components/TodoList.js';
 import { Pagination } from './components/Pagination.js';
 import { AppContextProvider } from './context/AppContext.js';
 import { useTodos } from './hooks/useTodos.js';
-import './styles/tokens.module.css';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -22,7 +22,9 @@ const queryClient = new QueryClient({
 function TodoApp() {
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
+  const [pageAnnouncement, setPageAnnouncement] = useState('');
   const { data, isLoading, isError } = useTodos(page, limit);
+  const qc = useQueryClient();
 
   function handlePageChange(newPage: number) {
     setPage(newPage);
@@ -31,6 +33,14 @@ function TodoApp() {
   function handleLimitChange(newLimit: number) {
     setLimit(newLimit);
     setPage(1);
+  }
+
+  function handleRetry() {
+    qc.invalidateQueries({ queryKey: ['todos'] });
+  }
+
+  function handlePageAnnounce(message: string) {
+    setPageAnnouncement(message);
   }
 
   return (
@@ -57,38 +67,13 @@ function TodoApp() {
         <TodoForm page={page} limit={limit} />
       </div>
 
-      {isLoading && (
-        <p
-          style={{
-            textAlign: 'center',
-            color: 'var(--color-text-secondary)',
-            padding: 'var(--space-8) 0',
-          }}
-          aria-live="polite"
-        >
-          Loading todos...
-        </p>
-      )}
-
-      {isError && !isLoading && (
-        <p
-          style={{
-            textAlign: 'center',
-            color: 'var(--color-error-text)',
-            background: 'var(--color-error-bg)',
-            padding: 'var(--space-4)',
-            borderRadius: 'var(--radius-md)',
-            border: '1px solid var(--color-error-border)',
-          }}
-          role="alert"
-        >
-          Failed to load todos. Please try again later.
-        </p>
+      {(isLoading || (isError && !isLoading)) && (
+        <LoadingState isError={isError && !isLoading} onRetry={handleRetry} />
       )}
 
       {data && !isLoading && (
         <>
-          <TodoList todos={data.data} total={data.pagination.total} />
+          <TodoList todos={data.data} total={data.pagination.total} isLoading={isLoading} />
 
           <div style={{ marginTop: 'var(--space-6)' }}>
             <Pagination
@@ -97,6 +82,7 @@ function TodoApp() {
               limit={limit}
               onPageChange={handlePageChange}
               onLimitChange={handleLimitChange}
+              onPageAnnounce={handlePageAnnounce}
             />
           </div>
         </>

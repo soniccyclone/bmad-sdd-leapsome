@@ -19,6 +19,9 @@ interface UseHealthCheckResult {
 export function useHealthCheck(): UseHealthCheckResult {
   const { isBackendDown, setIsBackendDown } = useAppContext();
   const wasDown = useRef(false);
+  // F15: Store setter in a ref so the effect doesn't depend on it
+  const setIsBackendDownRef = useRef(setIsBackendDown);
+  setIsBackendDownRef.current = setIsBackendDown;
 
   const { data, isError, isFetching } = useQuery({
     queryKey: ['health'],
@@ -39,14 +42,14 @@ export function useHealthCheck(): UseHealthCheckResult {
 
   useEffect(() => {
     if (isError) {
-      setIsBackendDown(true);
+      setIsBackendDownRef.current(true);
       wasDown.current = true;
     } else if (data?.status === 'ok' && wasDown.current) {
       // Backend recovered
-      setIsBackendDown(false);
+      setIsBackendDownRef.current(false);
       wasDown.current = false;
     }
-  }, [isError, data, setIsBackendDown]);
+  }, [isError, data]);
 
   const isRecovering = isBackendDown && isFetching;
 

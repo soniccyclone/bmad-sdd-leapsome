@@ -21,8 +21,13 @@ export function sanitize(input: string): string {
   // 2. Collapse whitespace
   result = result.replace(/\s+/g, ' ');
 
-  // 3. Strip HTML tags
-  result = result.replace(HTML_TAG_REGEX, '');
+  // 3. Strip HTML tags — loop until stable to prevent bypass via nested tags
+  //    e.g. `<scr<script>ipt>` becomes `<script>` after one pass
+  let prev: string;
+  do {
+    prev = result;
+    result = result.replace(HTML_TAG_REGEX, '');
+  } while (result !== prev);
 
   // Trim again in case tag stripping left leading/trailing spaces
   return result.trim();

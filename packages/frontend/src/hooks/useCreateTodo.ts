@@ -26,8 +26,8 @@ export function useCreateTodo(page: number, limit: number) {
         body: { description },
       });
       if (error) {
-        const err = new Error(error.error.message);
-        (err as Error & { code?: string }).code = error.error.code;
+        const err = new Error(error?.error?.message ?? 'An unexpected error occurred');
+        (err as Error & { code?: string }).code = error?.error?.code;
         throw err;
       }
       return data;
@@ -37,22 +37,19 @@ export function useCreateTodo(page: number, limit: number) {
       // Cancel any outgoing refetches so they don't overwrite our optimistic update
       await queryClient.cancelQueries({ queryKey: ['todos'] });
 
-      // Snapshot all current todo queries
+      // Snapshot all current todo queries using the queryClient (avoids stale closure over page/limit)
       const todoQueries = queryClient.getQueriesData<TodoListResponse>({
         queryKey: ['todos'],
       });
       const previousData = todoQueries as CreateTodoContext['previousData'];
 
-      // Find the current page data
-      const queryKey = ['todos', { page, limit }] as const;
-      const currentData = queryClient.getQueryData<TodoListResponse>(queryKey);
-
-      if (currentData) {
-        const { pagination } = currentData;
+      // Find the last page among all cached queries to optimistically add the new todo
+      for (const [key, data] of previousData) {
+        if (!data) continue;
+        const { pagination } = data;
         const isLastPage = pagination.page >= pagination.totalPages || pagination.totalPages === 0;
 
-        if (isLastPage && currentData.data.length < limit) {
-          // Optimistically add to current page
+        if (isLastPage && data.data.length < pagination.limit) {
           const optimisticTodo: Todo = {
             id: `optimistic-${Date.now()}`,
             description,
@@ -61,13 +58,14 @@ export function useCreateTodo(page: number, limit: number) {
             updatedAt: new Date().toISOString(),
           };
 
-          queryClient.setQueryData<TodoListResponse>(queryKey, {
-            data: [...currentData.data, optimisticTodo],
+          queryClient.setQueryData<TodoListResponse>(key, {
+            data: [...data.data, optimisticTodo],
             pagination: {
               ...pagination,
               total: pagination.total + 1,
             },
           });
+          break;
         }
       }
 

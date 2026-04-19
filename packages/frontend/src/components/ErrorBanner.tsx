@@ -1,5 +1,6 @@
 import { useAppContext } from '../context/AppContext.js';
 import { useHealthCheck } from '../hooks/useHealthCheck.js';
+import styles from './ErrorBanner.module.css';
 
 /**
  * Banner displayed when the backend is unreachable.
@@ -14,20 +15,7 @@ export function ErrorBanner() {
   }
 
   return (
-    <div
-      role="alert"
-      style={{
-        padding: '0.75rem 1rem',
-        backgroundColor: '#fef2f2',
-        color: '#7f1d1d',
-        border: '1px solid #fca5a5',
-        borderRadius: '0.375rem',
-        textAlign: 'center',
-        fontFamily: 'system-ui, sans-serif',
-        fontSize: '0.875rem',
-        fontWeight: 500,
-      }}
-    >
+    <div role="alert" className={styles.banner}>
       {isRecovering
         ? 'Reconnecting to server...'
         : 'Our site is experiencing problems. Please try again later.'}

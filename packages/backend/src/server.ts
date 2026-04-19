@@ -1,5 +1,5 @@
 import { createApp } from './app.js';
-import { connection } from './db/index.js';
+import { closeDb } from './db/index.js';
 
 const PORT = parseInt(process.env.PORT || '3000', 10);
 
@@ -11,7 +11,7 @@ async function start() {
     app.log.info(`Received ${signal}, shutting down gracefully...`);
     try {
       await app.close();
-      await connection.end();
+      await closeDb();
       app.log.info('Server and database connections closed');
       process.exit(0);
     } catch (err) {

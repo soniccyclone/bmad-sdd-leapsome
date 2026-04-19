@@ -7,9 +7,40 @@ interface PaginationProps {
   limit: number;
   onPageChange: (page: number) => void;
   onLimitChange: (limit: number) => void;
+  onPageAnnounce?: (message: string) => void;
 }
 
 const LIMIT_OPTIONS = [10, 20, 30, 40, 50];
+
+/**
+ * Compute the page numbers to display with ellipsis truncation.
+ * Shows: first page, last page, current page +/- 1, with ellipsis for gaps.
+ * E.g., for page 5 of 20: [1, '...', 4, 5, 6, '...', 20]
+ */
+function getVisiblePages(page: number, totalPages: number): (number | 'ellipsis')[] {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, i) => i + 1);
+  }
+
+  const pages = new Set<number>();
+  pages.add(1);
+  pages.add(totalPages);
+  pages.add(page);
+  if (page - 1 >= 1) pages.add(page - 1);
+  if (page + 1 <= totalPages) pages.add(page + 1);
+
+  const sorted = Array.from(pages).sort((a, b) => a - b);
+  const result: (number | 'ellipsis')[] = [];
+
+  for (let i = 0; i < sorted.length; i++) {
+    if (i > 0 && sorted[i] - sorted[i - 1] > 1) {
+      result.push('ellipsis');
+    }
+    result.push(sorted[i]);
+  }
+
+  return result;
+}
 
 export function Pagination({
   page,
@@ -17,6 +48,7 @@ export function Pagination({
   limit,
   onPageChange,
   onLimitChange,
+  onPageAnnounce,
 }: PaginationProps) {
   if (totalPages <= 1) {
     return null;
@@ -24,34 +56,37 @@ export function Pagination({
 
   function handlePageClick(newPage: number) {
     onPageChange(newPage);
-    // Announce page change to screen readers
-    const announcer = document.getElementById('pagination-announcer');
-    if (announcer) {
-      announcer.textContent = `Page ${newPage} of ${totalPages}`;
-    }
+    // Announce page change to screen readers via callback
+    onPageAnnounce?.(`Page ${newPage} of ${totalPages}`);
   }
 
   function handleLimitChange(value: string) {
     onLimitChange(Number(value));
   }
 
-  const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+  const visiblePages = getVisiblePages(page, totalPages);
 
   return (
     <nav className={styles.container} aria-label="Pagination">
       <div className={styles.pages}>
-        {pages.map((p) => (
-          <button
-            key={p}
-            type="button"
-            className={`${styles.pageButton} ${p === page ? styles.activePage : ''}`}
-            onClick={() => handlePageClick(p)}
-            aria-label={`Go to page ${p}`}
-            aria-current={p === page ? 'page' : undefined}
-          >
-            {p}
-          </button>
-        ))}
+        {visiblePages.map((p, index) =>
+          p === 'ellipsis' ? (
+            <span key={`ellipsis-${index}`} className={styles.ellipsis} aria-hidden="true">
+              &hellip;
+            </span>
+          ) : (
+            <button
+              key={p}
+              type="button"
+              className={`${styles.pageButton} ${p === page ? styles.activePage : ''}`}
+              onClick={() => handlePageClick(p)}
+              aria-label={`Go to page ${p}`}
+              aria-current={p === page ? 'page' : undefined}
+            >
+              {p}
+            </button>
+          ),
+        )}
       </div>
 
       <div className={styles.limitSelect}>

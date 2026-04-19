@@ -51,7 +51,7 @@ describe('App', () => {
 
   it('shows loading message when data is loading', () => {
     render(<App />);
-    expect(screen.getByText(/loading todos/i)).toBeInTheDocument();
+    expect(screen.getByText(/loading your todos/i)).toBeInTheDocument();
   });
 });
 
@@ -101,6 +101,6 @@ describe('App with data', () => {
     } as ReturnType<typeof useTodosModule.useTodos>);
 
     render(<App />);
-    expect(screen.getByText(/failed to load todos/i)).toBeInTheDocument();
+    expect(screen.getByText(/service unavailable/i)).toBeInTheDocument();
   });
 });

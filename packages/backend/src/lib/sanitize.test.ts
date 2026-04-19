@@ -80,6 +80,21 @@ describe('sanitize', () => {
   it('handles tags with attributes', () => {
     expect(sanitize('<a href="http://evil.com">click me</a>')).toBe('click me');
   });
+
+  it('strips nested/interleaved tags that bypass single-pass regex', () => {
+    // After first pass, `<<script>script>` becomes `<script>` which must be caught
+    expect(sanitize('<<script>script>alert(1)<</script>/script>')).toBe('alert(1)');
+  });
+
+  it('strips tags reconstructed from nested fragments', () => {
+    // `<scr<script>ipt>` first pass eats `<scr<script>` as one match, leaving `ipt>alert(1)`
+    // The loop ensures no new tags form from the remnants
+    expect(sanitize('<scr<script>ipt>alert(1)</script>')).toBe('ipt>alert(1)');
+  });
+
+  it('strips img tag with onerror attribute', () => {
+    expect(sanitize('<img onerror="alert(1)">')).toBe('');
+  });
 });
 
 describe('validateDescription', () => {

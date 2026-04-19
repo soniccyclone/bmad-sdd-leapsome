@@ -102,10 +102,10 @@ describe('TodoForm', () => {
     expect(input.value).toBe('');
   });
 
-  it('submit button is disabled when input is empty', () => {
+  it('submit button is aria-disabled when input is empty', () => {
     renderWithProviders(<TodoForm page={1} limit={10} />);
     const button = screen.getByRole('button', { name: /add todo/i });
-    expect(button).toBeDisabled();
+    expect(button).toHaveAttribute('aria-disabled', 'true');
   });
 });
 
@@ -139,7 +139,7 @@ describe('TodoForm with backend down', () => {
     expect(input).toBeDisabled();
 
     const button = screen.getByRole('button', { name: /add todo/i });
-    expect(button).toBeDisabled();
+    expect(button).toHaveAttribute('aria-disabled', 'true');
 
     expect(screen.getByPlaceholderText(/backend unavailable/i)).toBeInTheDocument();
 

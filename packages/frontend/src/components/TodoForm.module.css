@@ -18,7 +18,7 @@
   min-height: 2.75rem;
 }
 
-.input:focus {
+.input:focus-visible {
   outline: none;
   border-color: var(--color-border-focus);
   box-shadow: 0 0 0 1px var(--color-border-focus);
@@ -53,7 +53,7 @@
   white-space: nowrap;
 }
 
-.submitButton:hover:not(:disabled) {
+.submitButton:hover:not([aria-disabled="true"]) {
   background: var(--color-primary-hover);
 }
 
@@ -62,7 +62,7 @@
   outline-offset: 2px;
 }
 
-.submitButton:disabled {
+.submitButton[aria-disabled="true"] {
   opacity: 0.5;
   cursor: not-allowed;
 }

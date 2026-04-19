@@ -27,8 +27,8 @@ export function useUpdateDescription() {
         body: { description },
       });
       if (error) {
-        const err = new Error(error.error.message);
-        (err as Error & { code?: string }).code = error.error.code;
+        const err = new Error(error?.error?.message ?? 'An unexpected error occurred');
+        (err as Error & { code?: string }).code = error?.error?.code;
         throw err;
       }
       return data;
