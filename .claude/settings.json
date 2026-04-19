@@ -1,25 +1,42 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(bd close:*)",
+      "Bash(git add:*)",
+      "Bash(docker compose:*)",
+      "Bash(curl -s -X POST http://localhost:3000/api/todos -H 'Content-Type: application/json' -d '{\"description\":\"test todo\"}')",
+      "Bash(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080)",
+      "Bash(npm test:*)",
+      "Bash(npx --workspace=packages/frontend vite build)",
+      "Bash(curl -s http://localhost:3000/health)",
+      "Bash(curl -s -X POST http://localhost:3000/api/todos -H 'Content-Type: application/json' -d '{\"description\":\"Buy groceries\"}')",
+      "Bash(curl -s \"http://localhost:3000/api/todos?page=1&limit=10\")",
+      "Bash(npx playwright:*)",
+      "Bash(npx vitest:*)",
+      "Bash(gh run:*)"
+    ]
+  },
   "hooks": {
     "PreCompact": [
       {
+        "matcher": "",
         "hooks": [
           {
-            "command": "bd prime",
-            "type": "command"
+            "type": "command",
+            "command": "bd prime"
           }
-        ],
-        "matcher": ""
+        ]
       }
     ],
     "SessionStart": [
       {
+        "matcher": "",
         "hooks": [
           {
-            "command": "bd prime",
-            "type": "command"
+            "type": "command",
+            "command": "bd prime"
           }
-        ],
-        "matcher": ""
+        ]
       }
     ]
   }
