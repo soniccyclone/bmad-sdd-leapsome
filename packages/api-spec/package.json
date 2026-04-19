@@ -4,18 +4,9 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./types": {
-      "types": "./generated/types.ts",
-      "default": "./dist/types.js"
-    },
-    "./schemas": {
-      "types": "./generated/schemas.ts",
-      "default": "./dist/schemas.js"
-    },
-    "./client": {
-      "types": "./generated/client.ts",
-      "default": "./dist/client.js"
-    }
+    "./types": "./generated/types.ts",
+    "./schemas": "./generated/schemas.ts",
+    "./client": "./generated/client.ts"
   },
   "scripts": {
     "generate": "npm run generate:types && npm run generate:schemas",
