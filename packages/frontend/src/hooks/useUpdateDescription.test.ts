@@ -4,12 +4,12 @@ import { createElement, type ReactNode } from 'react';
 import { useUpdateDescription } from './useUpdateDescription.js';
 
 // Mock the API client
-vi.mock('@todo/api-spec/client', () => ({
-  client: {
-    GET: vi.fn(),
-    POST: vi.fn(),
-    PATCH: vi.fn(),
-    DELETE: vi.fn(),
+vi.mock('../lib/api.js', () => ({
+  api: {
+    get: vi.fn(),
+    post: vi.fn(),
+    patch: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
@@ -40,11 +40,8 @@ describe('useUpdateDescription', () => {
       updatedAt: '2024-01-02T00:00:00Z',
     };
 
-    const { client } = await import('@todo/api-spec/client');
-    (client.PATCH as ReturnType<typeof vi.fn>).mockResolvedValue({
-      data: mockTodo,
-      error: undefined,
-    });
+    const { api } = await import('../lib/api.js');
+    (api.patch as ReturnType<typeof vi.fn>).mockResolvedValue(mockTodo);
 
     const { result } = renderHook(() => useUpdateDescription(), {
       wrapper: createWrapper(),
@@ -58,18 +55,18 @@ describe('useUpdateDescription', () => {
       expect(result.current.isSuccess).toBe(true);
     });
 
-    expect(client.PATCH).toHaveBeenCalledWith('/api/todos/{id}', {
-      params: { path: { id: 'todo-1' } },
-      body: { description: 'Updated description' },
-    });
+    expect(api.patch).toHaveBeenCalledWith(
+      '/api/todos/:id',
+      { description: 'Updated description' },
+      { params: { id: 'todo-1' } },
+    );
   });
 
   it('handles error from API', async () => {
-    const { client } = await import('@todo/api-spec/client');
-    (client.PATCH as ReturnType<typeof vi.fn>).mockResolvedValue({
-      data: undefined,
-      error: { error: { message: 'Description too long', code: 'VALIDATION_ERROR' } },
-    });
+    const { api } = await import('../lib/api.js');
+    (api.patch as ReturnType<typeof vi.fn>).mockRejectedValue(
+      new Error('Description too long'),
+    );
 
     const { result } = renderHook(() => useUpdateDescription(), {
       wrapper: createWrapper(),

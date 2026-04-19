@@ -4,12 +4,12 @@ import { createElement, type ReactNode } from 'react';
 import { useDeleteTodo } from './useDeleteTodo.js';
 
 // Mock the API client
-vi.mock('@todo/api-spec/client', () => ({
-  client: {
-    GET: vi.fn(),
-    POST: vi.fn(),
-    PATCH: vi.fn(),
-    DELETE: vi.fn(),
+vi.mock('../lib/api.js', () => ({
+  api: {
+    get: vi.fn(),
+    post: vi.fn(),
+    patch: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
@@ -32,11 +32,8 @@ describe('useDeleteTodo', () => {
   });
 
   it('deletes a todo successfully', async () => {
-    const { client } = await import('@todo/api-spec/client');
-    (client.DELETE as ReturnType<typeof vi.fn>).mockResolvedValue({
-      data: undefined,
-      error: undefined,
-    });
+    const { api } = await import('../lib/api.js');
+    (api.delete as ReturnType<typeof vi.fn>).mockResolvedValue(undefined);
 
     const { result } = renderHook(() => useDeleteTodo(), {
       wrapper: createWrapper(),
@@ -50,17 +47,16 @@ describe('useDeleteTodo', () => {
       expect(result.current.isSuccess).toBe(true);
     });
 
-    expect(client.DELETE).toHaveBeenCalledWith('/api/todos/{id}', {
-      params: { path: { id: 'todo-1' } },
+    expect(api.delete).toHaveBeenCalledWith('/api/todos/:id', undefined, {
+      params: { id: 'todo-1' },
     });
   });
 
   it('handles error from API', async () => {
-    const { client } = await import('@todo/api-spec/client');
-    (client.DELETE as ReturnType<typeof vi.fn>).mockResolvedValue({
-      data: undefined,
-      error: { error: { message: 'Not found', code: 'NOT_FOUND' } },
-    });
+    const { api } = await import('../lib/api.js');
+    (api.delete as ReturnType<typeof vi.fn>).mockRejectedValue(
+      new Error('Not found'),
+    );
 
     const { result } = renderHook(() => useDeleteTodo(), {
       wrapper: createWrapper(),

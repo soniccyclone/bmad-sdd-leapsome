@@ -1,9 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { client } from '@todo/api-spec/client';
+import { api } from '../lib/api.js';
 import type { components } from '@todo/api-spec/types';
 import type { TodoListResponse } from './useTodos.js';
 
 type Todo = components['schemas']['Todo'];
+
 
 interface UpdateDescriptionVars {
   id: string;
@@ -22,16 +23,7 @@ export function useUpdateDescription() {
 
   return useMutation<Todo, Error, UpdateDescriptionVars, UpdateDescriptionContext>({
     mutationFn: async ({ id, description }) => {
-      const { data, error } = await client.PATCH('/api/todos/{id}', {
-        params: { path: { id } },
-        body: { description },
-      });
-      if (error) {
-        const err = new Error(error?.error?.message ?? 'An unexpected error occurred');
-        (err as Error & { code?: string }).code = error?.error?.code;
-        throw err;
-      }
-      return data;
+      return await api.patch('/api/todos/:id', { description }, { params: { id } });
     },
 
     onMutate: async ({ id, description }) => {
@@ -42,7 +34,6 @@ export function useUpdateDescription() {
       });
       const previousData = todoQueries as UpdateDescriptionContext['previousData'];
 
-      // Optimistically update the description in all cached pages
       for (const [key, data] of previousData) {
         if (data) {
           queryClient.setQueryData<TodoListResponse>(key, {

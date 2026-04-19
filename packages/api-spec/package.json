@@ -5,8 +5,7 @@
   "type": "module",
   "exports": {
     "./types": "./generated/types.ts",
-    "./schemas": "./generated/schemas.ts",
-    "./client": "./src/client.ts"
+    "./schemas": "./generated/schemas.ts"
   },
   "scripts": {
     "generate": "npm run generate:types && npm run generate:schemas",
@@ -17,7 +16,6 @@
   },
   "dependencies": {
     "@zodios/core": "^10.9.6",
-    "openapi-fetch": "^0.12.5",
     "openapi-typescript": "^7.13.0",
     "openapi-zod-client": "^1.18.3",
     "zod": "^3.25.76"

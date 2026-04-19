@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { client } from '@todo/api-spec/client';
+import { api } from '../lib/api.js';
 import type { TodoListResponse } from './useTodos.js';
+
 
 interface DeleteTodoVars {
   id: string;
@@ -18,14 +19,7 @@ export function useDeleteTodo() {
 
   return useMutation<void, Error, DeleteTodoVars, DeleteTodoContext>({
     mutationFn: async ({ id }) => {
-      const { error } = await client.DELETE('/api/todos/{id}', {
-        params: { path: { id } },
-      });
-      if (error) {
-        const err = new Error(error?.error?.message ?? 'An unexpected error occurred');
-        (err as Error & { code?: string }).code = error?.error?.code;
-        throw err;
-      }
+      await api.delete('/api/todos/:id', undefined, { params: { id } });
     },
 
     onMutate: async ({ id }) => {
@@ -36,7 +30,6 @@ export function useDeleteTodo() {
       });
       const previousData = todoQueries as DeleteTodoContext['previousData'];
 
-      // Optimistically remove the todo from all cached pages
       for (const [key, data] of previousData) {
         if (data) {
           queryClient.setQueryData<TodoListResponse>(key, {

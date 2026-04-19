@@ -4,12 +4,12 @@ import { createElement, type ReactNode } from 'react';
 import { useTodos, todosQueryKey } from './useTodos.js';
 
 // Mock the API client
-vi.mock('@todo/api-spec/client', () => ({
-  client: {
-    GET: vi.fn(),
-    POST: vi.fn(),
-    PATCH: vi.fn(),
-    DELETE: vi.fn(),
+vi.mock('../lib/api.js', () => ({
+  api: {
+    get: vi.fn(),
+    post: vi.fn(),
+    patch: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
@@ -44,11 +44,8 @@ describe('useTodos', () => {
       pagination: { page: 1, limit: 10, total: 1, totalPages: 1 },
     };
 
-    const { client } = await import('@todo/api-spec/client');
-    (client.GET as ReturnType<typeof vi.fn>).mockResolvedValue({
-      data: mockResponse,
-      error: undefined,
-    });
+    const { api } = await import('../lib/api.js');
+    (api.get as ReturnType<typeof vi.fn>).mockResolvedValue(mockResponse);
 
     const { result } = renderHook(() => useTodos(1, 10), {
       wrapper: createWrapper(),
@@ -63,11 +60,10 @@ describe('useTodos', () => {
   });
 
   it('returns error state on failure', async () => {
-    const { client } = await import('@todo/api-spec/client');
-    (client.GET as ReturnType<typeof vi.fn>).mockResolvedValue({
-      data: undefined,
-      error: { error: { message: 'Server error' } },
-    });
+    const { api } = await import('../lib/api.js');
+    (api.get as ReturnType<typeof vi.fn>).mockRejectedValue(
+      new Error('Server error'),
+    );
 
     const { result } = renderHook(() => useTodos(1, 10), {
       wrapper: createWrapper(),
