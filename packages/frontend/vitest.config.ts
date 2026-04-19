@@ -1,14 +1,18 @@
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
-import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname, resolve } from 'path';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const apiSpecGenerated = resolve(__dirname, '../api-spec/generated');
 
 export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@todo/api-spec/client': path.resolve(__dirname, '../api-spec/generated/client.ts'),
-      '@todo/api-spec/schemas': path.resolve(__dirname, '../api-spec/generated/schemas.ts'),
-      '@todo/api-spec/types': path.resolve(__dirname, '../api-spec/generated/types.ts'),
+      '@todo/api-spec/client': resolve(apiSpecGenerated, 'client.ts'),
+      '@todo/api-spec/schemas': resolve(apiSpecGenerated, 'schemas.ts'),
+      '@todo/api-spec/types': resolve(apiSpecGenerated, 'types.ts'),
     },
   },
   test: {

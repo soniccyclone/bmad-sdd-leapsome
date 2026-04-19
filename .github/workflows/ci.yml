@@ -60,5 +60,10 @@ jobs:
       - name: Run migrations
         run: make db-migrate
 
+      - name: Debug workspace links
+        run: |
+          ls -la node_modules/@todo/ || echo "No @todo in node_modules"
+          ls -la packages/api-spec/generated/ || echo "No generated files"
+
       - name: Run tests
         run: npm test --workspaces --if-present
