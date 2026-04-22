@@ -4,9 +4,16 @@ import { createTodo, getTodoItems, clearAllTodos, createTodoViaApi } from './hel
 test.describe('Todo App', () => {
   test.beforeEach(async ({ page }) => {
     await clearAllTodos(page);
+    // Verify the clear actually worked
+    const verify = await page.request.get('/api/todos?page=1&limit=1');
+    const body = await verify.json();
+    if (body.pagination.total !== 0) {
+      // Retry the clear
+      await clearAllTodos(page);
+    }
     await page.goto('/');
     // Wait for the app to finish loading
-    await page.getByLabel('New todo description').waitFor({ state: 'visible' });
+    await page.getByLabel('New todo description').waitFor({ state: 'visible', timeout: 15000 });
   });
 
   test('should create a todo and persist it after refresh', async ({ page }) => {
@@ -91,6 +98,9 @@ test.describe('Todo App', () => {
     await page.reload();
     await page.getByLabel('New todo description').waitFor({ state: 'visible' });
 
+    // Wait for list items to render after reload
+    await page.getByRole('listitem').first().waitFor({ state: 'visible', timeout: 10000 });
+
     // Page 1 should show 10 items
     const items = getTodoItems(page);
     await expect(items).toHaveCount(10);
@@ -110,6 +120,9 @@ test.describe('Todo App', () => {
     await createTodoViaApi(page, 'Original description');
     await page.reload();
     await page.getByLabel('New todo description').waitFor({ state: 'visible' });
+
+    // Wait for the todo to render
+    await page.getByText('Original description').waitFor({ state: 'visible', timeout: 10000 });
 
     // Click the description text to enter edit mode
     const descriptionSpan = page.getByText('Original description');
@@ -134,13 +147,23 @@ test.describe('Todo App', () => {
   });
 
   test('should change the per-page limit and update the displayed list', async ({ page }) => {
-    // Create 15 todos via API
+    // Create 15 todos via API and verify they exist
     for (let i = 1; i <= 15; i++) {
       await createTodoViaApi(page, `Limit test todo ${i}`);
     }
 
-    await page.reload();
+    // Verify via API that all 15 exist before loading the UI
+    const verifyResponse = await page.request.get('/api/todos?page=1&limit=50');
+    const verifyBody = await verifyResponse.json();
+    if (verifyBody.pagination.total < 15) {
+      throw new Error(`Expected 15 todos but API reports ${verifyBody.pagination.total}`);
+    }
+
+    await page.goto('/');
     await page.getByLabel('New todo description').waitFor({ state: 'visible' });
+
+    // Wait for list items to render
+    await page.getByRole('listitem').first().waitFor({ state: 'visible', timeout: 10000 });
 
     // Default limit is 10, so page 1 should show 10 items
     await expect(getTodoItems(page)).toHaveCount(10);

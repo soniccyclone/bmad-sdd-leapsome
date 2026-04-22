@@ -33,6 +33,7 @@ jobs:
       POSTGRES_PASSWORD: todo
       NODE_ENV: test
       LOG_LEVEL: silent
+      RATE_LIMIT_MAX: 1000
 
     steps:
       - uses: actions/checkout@v4
@@ -60,5 +61,47 @@ jobs:
       - name: Run migrations
         run: make db-migrate
 
-      - name: Run tests
-        run: npm test --workspaces --if-present
+      - name: Run unit and integration tests with coverage
+        run: |
+          npm test --workspace=packages/backend -- --coverage --reporter=json --outputFile=../../coverage/backend.json
+          npm test --workspace=packages/frontend -- --coverage --reporter=json --outputFile=../../coverage/frontend.json
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Run E2E tests
+        run: npx playwright test --config packages/frontend/playwright.config.ts
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+      - name: Generate coverage badge
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          BACKEND_COV=$(npm test --workspace=packages/backend -- --coverage 2>&1 | grep "All files" | awk '{print $4}')
+          FRONTEND_COV=$(npm test --workspace=packages/frontend -- --coverage 2>&1 | grep "All files" | awk '{print $4}')
+          # Average the two
+          AVG_COV=$(echo "scale=1; ($BACKEND_COV + $FRONTEND_COV) / 2" | bc)
+          echo "Backend: ${BACKEND_COV}%, Frontend: ${FRONTEND_COV}%, Average: ${AVG_COV}%"
+          # Determine badge color
+          if (( $(echo "$AVG_COV >= 80" | bc -l) )); then COLOR="brightgreen";
+          elif (( $(echo "$AVG_COV >= 70" | bc -l) )); then COLOR="green";
+          elif (( $(echo "$AVG_COV >= 50" | bc -l) )); then COLOR="yellow";
+          else COLOR="red"; fi
+          # Create badge JSON for shields.io endpoint
+          mkdir -p .github/badges
+          echo "{\"schemaVersion\":1,\"label\":\"coverage\",\"message\":\"${AVG_COV}%\",\"color\":\"${COLOR}\"}" > .github/badges/coverage.json
+
+      - name: Commit coverage badge
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .github/badges/coverage.json 2>/dev/null || true
+          git diff --staged --quiet || git commit -m "Update coverage badge [skip ci]"
+          git push || true

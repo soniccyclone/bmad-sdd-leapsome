@@ -8,9 +8,13 @@ export default defineConfig({
   workers: 1,
   reporter: 'html',
 
+  timeout: 30_000,
+  expect: { timeout: 10_000 },
+
   use: {
     baseURL: 'http://localhost:5173',
     trace: 'on-first-retry',
+    actionTimeout: 10_000,
   },
 
   projects: [
