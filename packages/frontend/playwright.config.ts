@@ -26,7 +26,9 @@ export default defineConfig({
 
   webServer: [
     {
-      command: 'cd ../../packages/backend && RATE_LIMIT_MAX=1000 npx tsx --env-file ../../.env src/server.ts',
+      command: process.env.CI
+        ? 'cd ../../packages/backend && npx tsx src/server.ts'
+        : 'cd ../../packages/backend && npx tsx --env-file ../../.env src/server.ts',
       port: 3000,
       reuseExistingServer: !process.env.CI,
       timeout: 30_000,
