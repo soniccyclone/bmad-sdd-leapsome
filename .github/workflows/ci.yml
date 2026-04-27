@@ -58,8 +58,13 @@ jobs:
       - name: Create test database
         run: psql "$DATABASE_URL" -c "CREATE DATABASE todo_test" || true
 
-      - name: Run migrations
+      - name: Run migrations on dev database
         run: make db-migrate
+
+      - name: Run migrations on test database
+        run: make db-migrate
+        env:
+          DATABASE_URL: postgres://todo:todo@localhost:5432/todo_test
 
       - name: Run unit and integration tests with coverage
         run: |
@@ -71,6 +76,8 @@ jobs:
 
       - name: Run E2E tests
         run: npx playwright test --config packages/frontend/playwright.config.ts
+        env:
+          DATABASE_URL: postgres://todo:todo@localhost:5432/todo_test
 
       - name: Upload Playwright report
         if: failure()

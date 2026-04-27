@@ -32,6 +32,10 @@ export default defineConfig({
       port: 3000,
       reuseExistingServer: !process.env.CI,
       timeout: 30_000,
+      env: {
+        // E2E tests use the test database, not the dev database
+        DATABASE_URL: 'postgres://todo:todo@localhost:5432/todo_test',
+      },
     },
     {
       command: 'npx vite --port 5173',
