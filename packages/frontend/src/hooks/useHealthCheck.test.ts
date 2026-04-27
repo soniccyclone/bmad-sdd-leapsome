@@ -47,7 +47,7 @@ describe('useHealthCheck', () => {
     expect(result.current.isRecovering).toBe(false);
   });
 
-  it('sets isBackendDown=true when health check fails', async () => {
+  it('does not show banner on first failure during initial load', async () => {
     const { api } = await import('../lib/api.js');
     (api.get as ReturnType<typeof vi.fn>).mockRejectedValue(
       new Error('Network error'),
@@ -57,8 +57,12 @@ describe('useHealthCheck', () => {
       wrapper: createWrapper(),
     });
 
+    // Wait for the query to settle
     await waitFor(() => {
-      expect(result.current.isBackendDown).toBe(true);
+      expect(api.get).toHaveBeenCalled();
     });
+
+    // First failure should NOT show banner (backend may still be booting)
+    expect(result.current.isBackendDown).toBe(false);
   });
 });
