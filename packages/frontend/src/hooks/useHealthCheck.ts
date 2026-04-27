@@ -19,6 +19,8 @@ interface UseHealthCheckResult {
 export function useHealthCheck(): UseHealthCheckResult {
   const { isBackendDown, setIsBackendDown } = useAppContext();
   const wasDown = useRef(false);
+  const hasEverSucceeded = useRef(false);
+  const consecutiveFailures = useRef(0);
   const setIsBackendDownRef = useRef(setIsBackendDown);
   setIsBackendDownRef.current = setIsBackendDown;
 
@@ -29,17 +31,27 @@ export function useHealthCheck(): UseHealthCheckResult {
     },
     refetchInterval: isBackendDown ? HEALTH_POLL_INTERVAL : false,
     enabled: true,
-    retry: false,
+    retry: 1,
     staleTime: HEALTH_POLL_INTERVAL,
   });
 
   useEffect(() => {
     if (isError) {
-      setIsBackendDownRef.current(true);
-      wasDown.current = true;
-    } else if (data?.status === 'ok' && wasDown.current) {
-      setIsBackendDownRef.current(false);
-      wasDown.current = false;
+      consecutiveFailures.current++;
+      // Don't show the banner on the first failure during initial load —
+      // the backend may still be booting. Only show after 2+ consecutive
+      // failures or if we previously had a successful connection.
+      if (hasEverSucceeded.current || consecutiveFailures.current >= 2) {
+        setIsBackendDownRef.current(true);
+        wasDown.current = true;
+      }
+    } else if (data?.status === 'ok') {
+      hasEverSucceeded.current = true;
+      consecutiveFailures.current = 0;
+      if (wasDown.current) {
+        setIsBackendDownRef.current(false);
+        wasDown.current = false;
+      }
     }
   }, [isError, data]);
 

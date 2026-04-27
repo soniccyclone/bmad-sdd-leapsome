@@ -8,9 +8,13 @@ export default defineConfig({
   workers: 1,
   reporter: 'html',
 
+  timeout: 30_000,
+  expect: { timeout: 10_000 },
+
   use: {
     baseURL: 'http://localhost:5173',
     trace: 'on-first-retry',
+    actionTimeout: 10_000,
   },
 
   projects: [
@@ -22,10 +26,16 @@ export default defineConfig({
 
   webServer: [
     {
-      command: 'cd ../../packages/backend && RATE_LIMIT_MAX=1000 npx tsx --env-file ../../.env src/server.ts',
+      command: process.env.CI
+        ? 'cd ../../packages/backend && npx tsx src/server.ts'
+        : 'cd ../../packages/backend && npx tsx --env-file ../../.env src/server.ts',
       port: 3000,
       reuseExistingServer: !process.env.CI,
       timeout: 30_000,
+      env: {
+        // E2E tests use the test database, not the dev database
+        DATABASE_URL: 'postgres://todo:todo@localhost:5432/todo_test',
+      },
     },
     {
       command: 'npx vite --port 5173',

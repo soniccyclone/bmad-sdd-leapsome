@@ -1,5 +1,8 @@
 # Todo App
 
+[![CI](https://github.com/soniccyclone/bmad-sdd-leapsome/actions/workflows/ci.yml/badge.svg)](https://github.com/soniccyclone/bmad-sdd-leapsome/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/soniccyclone/bmad-sdd-leapsome/main/.github/badges/coverage.json)](https://github.com/soniccyclone/bmad-sdd-leapsome/actions/workflows/ci.yml)
+
 A full-stack Todo application built using BMAD spec-driven development. OpenAPI 3.1 specification is the single source of truth -- all types, validators, and the API client are generated from it.
 
 ## Tech Stack

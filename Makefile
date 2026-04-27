@@ -25,8 +25,11 @@ test:              ## Run all tests (unit + integration) — requires Postgres
 	$(MAKE) db-test-ensure
 	npm test --workspaces --if-present
 
-test-e2e:          ## Run E2E tests (starts app via Playwright webServer config)
-	npx playwright test --config packages/frontend/playwright.config.ts
+test-e2e:          ## Run E2E tests (uses todo_test database, starts app via Playwright webServer)
+	$(MAKE) docker-up
+	$(MAKE) db-wait
+	$(MAKE) db-test-ensure
+	DATABASE_URL=postgres://todo:todo@localhost:5432/todo_test npx playwright test --config packages/frontend/playwright.config.ts
 
 codegen:           ## Generate types, schemas, client from OpenAPI spec
 	npm run generate --workspace=packages/api-spec
