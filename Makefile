@@ -74,7 +74,7 @@ docker-up:         ## Start Postgres only (for local dev)
 	docker compose up -d postgres
 
 docker-up-prod:    ## Start full production stack (Postgres + backend + frontend)
-	docker compose --profile prod up -d --build
+	docker compose up -d --build
 
 docker-up-test:    ## Start Postgres + create test database
 	docker compose --profile test up -d

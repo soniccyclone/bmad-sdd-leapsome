@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./types": "./generated/types.ts",
-    "./schemas": "./generated/schemas.ts"
+    "./types": "./dist/types.js",
+    "./schemas": "./dist/schemas.js"
   },
   "scripts": {
     "generate": "npm run generate:types && npm run generate:schemas",

@@ -13,9 +13,7 @@ services:
       timeout: 3s
       retries: 5
 
-  # Production: built backend image
   backend:
-    profiles: [prod]
     build:
       context: .
       dockerfile: packages/backend/Dockerfile
@@ -35,9 +33,7 @@ services:
       timeout: 3s
       retries: 3
 
-  # Production: built frontend image (nginx)
   frontend:
-    profiles: [prod]
     build:
       context: .
       dockerfile: packages/frontend/Dockerfile
