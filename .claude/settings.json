@@ -29,7 +29,8 @@
       "mcp__chrome-devtools__lighthouse_audit",
       "mcp__playwright__browser_resize",
       "mcp__chrome-devtools__wait_for",
-      "Bash(bd show:*)"
+      "Bash(bd show:*)",
+      "Bash(git commit -m ':*)"
     ]
   },
   "hooks": {
