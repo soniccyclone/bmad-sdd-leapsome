@@ -4,7 +4,8 @@
       "type": "stdio",
       "command": "npx",
       "args": [
-        "@playwright/mcp@latest"
+        "@playwright/mcp@latest",
+        "--browser", "chromium"
       ],
       "env": {}
     },
@@ -12,7 +13,8 @@
       "type": "stdio",
       "command": "npx",
       "args": [
-        "chrome-devtools-mcp@latest"
+        "chrome-devtools-mcp@latest",
+        "--executablePath", "/Users/nathan/Library/Caches/ms-playwright/chromium-1217/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing"
       ],
       "env": {}
     }

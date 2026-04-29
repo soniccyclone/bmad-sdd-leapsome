@@ -39,6 +39,8 @@ export function TodoForm({ page, limit }: TodoFormProps) {
   return (
     <form className={styles.form} onSubmit={handleSubmit}>
       <input
+        id="new-todo"
+        name="new-todo"
         className={styles.input}
         type="text"
         value={description}

@@ -28,7 +28,36 @@
 
 ## MCP Server Usage
 
-No MCP servers were used in this project. All development was done via Claude Code CLI with BMAD skills. The Postman MCP and Chrome DevTools MCP mentioned in the Leapsome requirements were not utilized — API validation was handled by the OpenAPI codegen + Zod contract testing approach instead.
+MCP servers were integrated late in the project (after all features were complete) as a remediation step. See `_bmad-output/mcp-gap-analysis.md` for why they were initially skipped, and `_bmad-output/mcp-post-mortem.md` for the full findings.
+
+### Chrome DevTools MCP
+
+| Capability Used | Finding |
+|---|---|
+| Console inspection | Found form field accessibility issue (missing `id`/`name` on input) — fixed |
+| Network waterfall | Confirmed all API calls return correct status codes (200/201/204) |
+| Resource loading | Found `favicon.ico` 404 — fixed with inline SVG favicon |
+| Lighthouse audit (desktop) | Accessibility: 100, Best Practices: 100, SEO: 82 |
+| Lighthouse audit (mobile) | Accessibility: 100, Best Practices: 100, SEO: 82 |
+| Accessibility tree | Confirmed proper ARIA roles, live regions, disabled states |
+
+### Playwright MCP
+
+| Capability Used | Finding |
+|---|---|
+| Browser automation | Full CRUD cycle verified (create, toggle, delete) |
+| Accessibility snapshots | Semantic structure confirmed (headings, lists, labeled controls, status regions) |
+| Mobile viewport (375x812) | Layout responsive, no overflow |
+| Screenshot capture | Visual verification of all states (empty, with todos, completed, error) |
+| Error state testing | Backend-down state renders gracefully with Retry button; recovery works |
+
+### Postman MCP
+
+Not integrated — user declined API key generation. Spec-first approach (OpenAPI codegen + Zod contract testing) covers most of what it provides.
+
+### Key Lesson
+
+Spec-driven development and MCP visual verification are orthogonal. Contract testing verifies that code output matches the spec. MCP servers verify that the code actually runs in a browser, looks correct, and handles edge cases gracefully. Skipping MCP because you have contract testing is like skipping integration tests because you have types. Both are needed for complete coverage.
 
 ## Test Generation
 
@@ -54,5 +83,5 @@ No MCP servers were used in this project. All development was done via Claude Co
 | 2.1 | BMAD party mode agent manifest was empty on fresh install — needed interactive TUI installer | Claude Code can't automate interactive TUI; user ran manually |
 | 2.2-2.3 | Parallel subagents can produce conflicting changes if they modify the same files | Orchestrator must carefully scope prompts to non-overlapping files |
 | 2.2-2.3 | AI generated optimistic update code with pseudocode comments initially | Adversarial review caught this; AI rewrote with real implementation |
-| 2-4 | No MCP servers used despite Leapsome requirements mentioning them | Spec-first approach (OpenAPI codegen + Zod) made MCP less necessary |
+| 2-4 | MCP servers skipped during implementation despite Leapsome requirements | Integrated post-completion as remediation. Found 2 bugs (favicon 404, form field a11y). Lighthouse confirmed 100/100 accessibility. Lesson: integrate MCP from the start. |
 | 4 | Coverage report is based on source code analysis, not actual coverage metrics | Needs real test execution with coverage tooling to validate |
