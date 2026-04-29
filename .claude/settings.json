@@ -30,7 +30,14 @@
       "mcp__playwright__browser_resize",
       "mcp__chrome-devtools__wait_for",
       "Bash(bd show:*)",
-      "Bash(git commit -m ':*)"
+      "Bash(git commit -m ':*)",
+      "mcp__chrome-devtools__new_page",
+      "Bash(/usr/bin/make test-e2e:*)",
+      "Bash(npx tsx:*)",
+      "Bash(curl -s \"http://localhost:3000/health\")",
+      "Bash(lsof -ti:3000)",
+      "Bash(xargs kill:*)",
+      "mcp__chrome-devtools__get_network_request"
     ]
   },
   "hooks": {
