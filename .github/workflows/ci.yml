@@ -52,6 +52,9 @@ jobs:
       - name: Generate types from spec
         run: make codegen
 
+      - name: Build api-spec (compile generated TS to JS)
+        run: npm run build --workspace=packages/api-spec
+
       - name: Compile-check generated output
         run: npx tsc --noEmit --strict --moduleResolution bundler --module ESNext --target ES2022 packages/api-spec/generated/types.ts
 
