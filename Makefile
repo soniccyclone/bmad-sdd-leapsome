@@ -64,10 +64,11 @@ db-wait:           ## Wait for Postgres to be healthy (timeout: 60s)
 	if [ $$i -ge 60 ]; then echo "ERROR: Postgres failed to start within 60s"; exit 1; fi
 	@echo "Postgres is ready."
 
-db-test-ensure:    ## Create test database if it doesn't exist
+db-test-ensure:    ## Create test database if it doesn't exist, then run migrations
 	@docker compose exec postgres psql -U $${POSTGRES_USER:-todo} -tc \
 		"SELECT 1 FROM pg_database WHERE datname = 'todo_test'" | grep -q 1 \
 		|| docker compose exec postgres psql -U $${POSTGRES_USER:-todo} -c "CREATE DATABASE todo_test"
+	@DATABASE_URL=postgres://todo:todo@localhost:5432/todo_test npm run db:migrate --workspace=packages/backend
 
 docker-up:         ## Start Postgres only (for local dev)
 	docker compose up -d postgres

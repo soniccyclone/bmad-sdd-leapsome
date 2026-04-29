@@ -35,6 +35,8 @@ export default defineConfig({
       env: {
         // E2E tests use the test database, not the dev database
         DATABASE_URL: 'postgres://todo:todo@localhost:5432/todo_test',
+        // Disable rate limiting for E2E tests (default 100/min is too low)
+        RATE_LIMIT_MAX: '10000',
       },
     },
     {

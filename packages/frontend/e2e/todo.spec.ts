@@ -155,8 +155,8 @@ test.describe('Todo App', () => {
     // Verify via API that all 15 exist before loading the UI
     const verifyResponse = await page.request.get('/api/todos?page=1&limit=50');
     const verifyBody = await verifyResponse.json();
-    if (verifyBody.pagination.total < 15) {
-      throw new Error(`Expected 15 todos but API reports ${verifyBody.pagination.total}`);
+    if (!verifyBody.pagination || verifyBody.pagination.total < 15) {
+      throw new Error(`Expected 15 todos but API reports ${JSON.stringify(verifyBody).slice(0, 200)}`);
     }
 
     await page.goto('/');
@@ -178,7 +178,8 @@ test.describe('Todo App', () => {
     // Now all 15 items should be visible on a single page
     await expect(getTodoItems(page)).toHaveCount(15);
 
-    // Pagination should disappear since all items fit on one page
-    await expect(page.getByRole('navigation', { name: 'Pagination' })).not.toBeVisible();
+    // Page buttons should disappear but per-page dropdown remains
+    await expect(page.getByRole('button', { name: /go to page/i })).not.toBeVisible();
+    await expect(page.getByRole('combobox', { name: /per page/i })).toBeVisible();
   });
 });
