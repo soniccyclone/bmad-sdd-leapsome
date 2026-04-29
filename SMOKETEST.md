@@ -130,8 +130,8 @@ npm test --workspace=packages/frontend -- --coverage 2>&1 | grep -B2 "All files"
 lsof -ti:3000 | xargs kill 2>/dev/null
 lsof -ti:5173 | xargs kill 2>/dev/null
 
-# Build and run the production stack
-docker compose up --build
+# Build and run the production stack (backend + frontend need the prod profile)
+docker compose --profile prod up --build
 ```
 
 - [ ] All three services start (postgres, backend, frontend)
@@ -142,7 +142,7 @@ docker compose up --build
 - [ ] `docker compose logs` shows no errors
 
 ```bash
-docker compose down
+docker compose --profile prod down
 ```
 
 ---
