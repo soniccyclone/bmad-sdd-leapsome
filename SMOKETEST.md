@@ -114,8 +114,8 @@ make test-e2e
 
 **Coverage check:**
 ```bash
-npm test --workspace=packages/backend -- --coverage 2>&1 | grep "All files"
-npm test --workspace=packages/frontend -- --coverage 2>&1 | grep "All files"
+npm test --workspace=packages/backend -- --coverage 2>&1 | grep -B2 "All files"
+npm test --workspace=packages/frontend -- --coverage 2>&1 | grep -B2 "All files"
 ```
 
 - [ ] Backend coverage >= 70%
