@@ -38,6 +38,7 @@ function TodoApp() {
 
   function handleRetry() {
     qc.invalidateQueries({ queryKey: ['todos'] });
+    qc.invalidateQueries({ queryKey: ['health'] });
   }
 
   function handlePageAnnounce(message: string) {

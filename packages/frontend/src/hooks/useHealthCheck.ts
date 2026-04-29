@@ -20,7 +20,6 @@ export function useHealthCheck(): UseHealthCheckResult {
   const { isBackendDown, setIsBackendDown } = useAppContext();
   const wasDown = useRef(false);
   const hasEverSucceeded = useRef(false);
-  const consecutiveFailures = useRef(0);
   const setIsBackendDownRef = useRef(setIsBackendDown);
   setIsBackendDownRef.current = setIsBackendDown;
 
@@ -29,7 +28,7 @@ export function useHealthCheck(): UseHealthCheckResult {
     queryFn: async () => {
       return await api.get('/health');
     },
-    refetchInterval: isBackendDown ? HEALTH_POLL_INTERVAL : false,
+    refetchInterval: HEALTH_POLL_INTERVAL,
     enabled: true,
     retry: 1,
     staleTime: HEALTH_POLL_INTERVAL,
@@ -37,17 +36,12 @@ export function useHealthCheck(): UseHealthCheckResult {
 
   useEffect(() => {
     if (isError) {
-      consecutiveFailures.current++;
-      // Don't show the banner on the first failure during initial load —
-      // the backend may still be booting. Only show after 2+ consecutive
-      // failures or if we previously had a successful connection.
-      if (hasEverSucceeded.current || consecutiveFailures.current >= 2) {
-        setIsBackendDownRef.current(true);
-        wasDown.current = true;
-      }
+      // The query already retried (retry: 1) before reaching isError,
+      // so this represents 2 failed attempts. Safe to flag as down.
+      setIsBackendDownRef.current(true);
+      wasDown.current = true;
     } else if (data?.status === 'ok') {
       hasEverSucceeded.current = true;
-      consecutiveFailures.current = 0;
       if (wasDown.current) {
         setIsBackendDownRef.current(false);
         wasDown.current = false;
