@@ -1,6 +1,7 @@
 .PHONY: setup dev dev-db test test-e2e codegen spec-lint contract-check coverage \
        db-migrate db-seed db-studio db-wait db-test-ensure \
-       docker-up docker-up-prod docker-up-test docker-down docs-build docs-serve ci-check help
+       docker-up docker-up-prod docker-up-test docker-down docs-build docs-serve ci-check \
+       mcp-playwright mcp-devtools mcp-all help
 
 setup:             ## First-time setup: install deps, env, codegen, migrate
 	cp -n .env.example .env || true
@@ -92,6 +93,18 @@ docs-build:        ## Build API docs (Scalar) + MkDocs site
 
 docs-serve:        ## Serve docs locally
 	cd docs && mkdocs serve
+
+mcp-playwright:    ## Install Playwright MCP server for Claude Code
+	claude mcp add playwright --scope project -- npx @playwright/mcp@latest
+	@echo "Playwright MCP installed. Restart Claude Code to activate."
+
+mcp-devtools:      ## Install Chrome DevTools MCP server for Claude Code
+	claude mcp add chrome-devtools --scope project -- npx chrome-devtools-mcp@latest
+	@echo "Chrome DevTools MCP installed. Restart Claude Code to activate."
+
+mcp-all:           ## Install all MCP servers
+	$(MAKE) mcp-playwright
+	$(MAKE) mcp-devtools
 
 help:              ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
