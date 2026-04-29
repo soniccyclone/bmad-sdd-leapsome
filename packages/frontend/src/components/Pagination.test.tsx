@@ -38,14 +38,16 @@ describe('Pagination', () => {
     expect(onPageChange).toHaveBeenCalledWith(3);
   });
 
-  it('returns null when totalPages <= 1', () => {
-    const { container } = render(<Pagination {...defaultProps} totalPages={1} />);
-    expect(container.innerHTML).toBe('');
+  it('hides page buttons but shows per-page dropdown when totalPages <= 1', () => {
+    render(<Pagination {...defaultProps} totalPages={1} />);
+    expect(screen.queryByRole('button', { name: /go to page/i })).not.toBeInTheDocument();
+    expect(screen.getByText('Per page:')).toBeInTheDocument();
   });
 
-  it('returns null when totalPages is 0', () => {
-    const { container } = render(<Pagination {...defaultProps} totalPages={0} />);
-    expect(container.innerHTML).toBe('');
+  it('hides page buttons but shows per-page dropdown when totalPages is 0', () => {
+    render(<Pagination {...defaultProps} totalPages={0} />);
+    expect(screen.queryByRole('button', { name: /go to page/i })).not.toBeInTheDocument();
+    expect(screen.getByText('Per page:')).toBeInTheDocument();
   });
 
   it('renders pagination navigation with aria-label', () => {

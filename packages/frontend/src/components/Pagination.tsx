@@ -50,10 +50,6 @@ export function Pagination({
   onLimitChange,
   onPageAnnounce,
 }: PaginationProps) {
-  if (totalPages <= 1) {
-    return null;
-  }
-
   function handlePageClick(newPage: number) {
     if (newPage === page) return;
     onPageChange(newPage);
@@ -65,30 +61,33 @@ export function Pagination({
     onLimitChange(Number(value));
   }
 
-  const visiblePages = getVisiblePages(page, totalPages);
+  const showPageButtons = totalPages > 1;
+  const visiblePages = showPageButtons ? getVisiblePages(page, totalPages) : [];
 
   return (
     <nav className={styles.container} aria-label="Pagination">
-      <div className={styles.pages}>
-        {visiblePages.map((p, index) =>
-          p === 'ellipsis' ? (
-            <span key={`ellipsis-${index}`} className={styles.ellipsis} aria-hidden="true">
-              &hellip;
-            </span>
-          ) : (
-            <button
-              key={p}
-              type="button"
-              className={`${styles.pageButton} ${p === page ? styles.activePage : ''}`}
-              onClick={() => handlePageClick(p)}
-              aria-label={`Go to page ${p}`}
-              aria-current={p === page ? 'page' : undefined}
-            >
-              {p}
-            </button>
-          ),
-        )}
-      </div>
+      {showPageButtons && (
+        <div className={styles.pages}>
+          {visiblePages.map((p, index) =>
+            p === 'ellipsis' ? (
+              <span key={`ellipsis-${index}`} className={styles.ellipsis} aria-hidden="true">
+                &hellip;
+              </span>
+            ) : (
+              <button
+                key={p}
+                type="button"
+                className={`${styles.pageButton} ${p === page ? styles.activePage : ''}`}
+                onClick={() => handlePageClick(p)}
+                aria-label={`Go to page ${p}`}
+                aria-current={p === page ? 'page' : undefined}
+              >
+                {p}
+              </button>
+            ),
+          )}
+        </div>
+      )}
 
       <div className={styles.limitSelect}>
         <span className={styles.limitLabel} id="limit-label">

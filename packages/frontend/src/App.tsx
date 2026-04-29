@@ -33,6 +33,7 @@ function TodoApp() {
   function handleLimitChange(newLimit: number) {
     setLimit(newLimit);
     setPage(1);
+    setPageAnnouncement('');
   }
 
   function handleRetry() {
@@ -83,16 +84,18 @@ function TodoApp() {
           <>
             <TodoList todos={data.data} total={data.pagination.total} isLoading={isLoading} />
 
-            <div style={{ marginTop: 'var(--space-6)' }}>
-              <Pagination
-                page={data.pagination.page}
-                totalPages={data.pagination.totalPages}
-                limit={limit}
-                onPageChange={handlePageChange}
-                onLimitChange={handleLimitChange}
-                onPageAnnounce={handlePageAnnounce}
-              />
-            </div>
+            {data.pagination.total > 10 && (
+              <div style={{ marginTop: 'var(--space-6)' }}>
+                <Pagination
+                  page={data.pagination.page}
+                  totalPages={data.pagination.totalPages}
+                  limit={limit}
+                  onPageChange={handlePageChange}
+                  onLimitChange={handleLimitChange}
+                  onPageAnnounce={handlePageAnnounce}
+                />
+              </div>
+            )}
           </>
         )}
       </main>
