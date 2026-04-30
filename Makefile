@@ -6,6 +6,7 @@
 setup:             ## First-time setup: install deps, env, codegen, migrate
 	cp -n .env.example .env || true
 	npm install
+	npx playwright install chromium
 	$(MAKE) codegen
 	npm run build --workspace=packages/api-spec
 	$(MAKE) docker-up

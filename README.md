@@ -60,7 +60,7 @@ Run `make help` for a full list. Key commands:
 ## Running Tests
 
 ```bash
-# Unit + integration tests (24 tests, requires Postgres)
+# Unit + integration tests (112 tests, requires Postgres)
 make test
 
 # E2E tests (8 Playwright tests, starts app automatically)
