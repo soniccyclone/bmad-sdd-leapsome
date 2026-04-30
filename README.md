@@ -18,17 +18,21 @@ A full-stack Todo application built using BMAD spec-driven development. OpenAPI 
 
 ## Quick Start
 
-**Prerequisites:** Node 20+, Docker
+**Prerequisites:**
+
+- **OS:** macOS or Linux. Windows is not supported (the Makefile uses POSIX shell); use WSL2 if you're on Windows.
+- **Tools:** Node 20+, Docker.
+- **Free ports:** `3000` (backend), `5173` (frontend dev), `5432` (Postgres), `8080` (frontend prod via `docker compose up`).
 
 ```bash
-# Clone and setup (installs deps, starts Postgres, runs migrations)
+# Clone and setup (installs deps + Playwright browser, starts Postgres, runs migrations)
 make setup
 
 # Start development servers (frontend on :5173, backend on :3000)
 make dev
 ```
 
-That's it. `make setup` handles everything: dependency installation, Docker services, database creation, and migrations.
+That's it. `make setup` handles everything: dependency installation, Playwright browser download, Docker services, database creation, and migrations.
 
 ## Docker Deployment
 
