@@ -98,7 +98,7 @@ The three packages are npm workspaces. `api-spec` is a dependency of both `front
 
 ### QA Reports
 
-- [Coverage Report](_bmad-output/coverage-report-2026-04-29.md) -- current test inventory and coverage (~79% combined; backend 77.84%, frontend 80.27%)
+- [Coverage Report](_bmad-output/coverage-report-2026-04-29.md) -- current test inventory and coverage (79.53% combined; backend 77.84%, frontend 80.27%)
 - [Accessibility Report](_bmad-output/accessibility-report.md) -- WCAG AA compliance assessment
 - [Security Report](_bmad-output/security-report.md) -- OWASP Top 10 assessment
 - [Performance Report](_bmad-output/performance-report.md) -- architectural performance analysis

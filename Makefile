@@ -44,9 +44,17 @@ contract-check:    ## Validate API responses match spec (CI gate)
 	npm run test:contract --workspace=packages/backend
 
 coverage:          ## Run tests with coverage and merge reports
-	npm test --workspaces --if-present -- --coverage --reporter=json
-	npx nyc merge packages/backend/coverage packages/frontend/coverage coverage/merged.json
-	npx nyc report --temp-dir coverage --report-dir coverage/combined --reporter=text --reporter=lcov
+	$(MAKE) docker-up
+	$(MAKE) db-wait
+	$(MAKE) db-test-ensure
+	npm test --workspace=packages/backend -- --coverage
+	npm test --workspace=packages/frontend -- --coverage
+	rm -rf coverage/raw coverage/combined
+	mkdir -p coverage/raw coverage/combined
+	cp packages/backend/coverage/coverage-final.json coverage/raw/backend.json
+	cp packages/frontend/coverage/coverage-final.json coverage/raw/frontend.json
+	npx nyc merge coverage/raw coverage/merged.json
+	npx nyc report --temp-dir coverage/raw --report-dir coverage/combined --reporter=text --reporter=lcov
 
 db-migrate:        ## Run Drizzle migrations
 	@if [ -f .env ]; then set -a && . ./.env && set +a; fi && npm run db:migrate --workspace=packages/backend
