@@ -1,5 +1,7 @@
 # Test Coverage Analysis Report
 
+> **Superseded by [coverage-report-2026-04-29.md](coverage-report-2026-04-29.md).** This document is the original gap analysis that motivated the test work; it is preserved as a point-in-time snapshot. For current coverage numbers, see the 2026-04-29 report.
+
 **Date:** 2026-04-14
 **Scope:** Todo App Monorepo (packages/backend, packages/frontend)
 
